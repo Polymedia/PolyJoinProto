@@ -1,0 +1,56 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Common;
+using DifferenceLib;
+using Polymedia.PolyJoin.Common;
+
+namespace Polymedia.PolyJoin.Server
+{
+    class ServerWebSocketConnection: ConnectionWrapper
+    {
+        public event EventHandler<ConnectionEventArgs<GetStateCommand>> GetStateCommandReceived = delegate { };
+        public event EventHandler<ConnectionEventArgs<DiffCommand>> DiffCommandReceived = delegate { }; 
+        
+        public ServerWebSocketConnection(IWebSocketConnection webSocketConnection) : base(webSocketConnection)
+        {
+        }
+
+        public void SendState(int conferenceId, bool isPresenter)
+        {
+            StateCommand command = new StateCommand();
+            command.ConferenceId = conferenceId;
+            command.IsPresenter = isPresenter;
+            SendCommand(command);
+        }
+
+        public void SendDiff(DiffContainer container)
+        {
+            DiffCommand command = new DiffCommand();
+            command.Container = container;
+            SendCommand(command);
+        }
+
+        protected override void OnReceivedCommand(Command command)
+        {
+            command.SenderConnection = this;
+
+            switch (command.CommandName)
+            {
+                case CommandName.GetState:
+                    Console.WriteLine("Command GetState");
+                    GetStateCommandReceived.Invoke(this, new ConnectionEventArgs<GetStateCommand>() { Value = (GetStateCommand)command });
+                    break;
+                case CommandName.Diff:
+                    Console.WriteLine("Command Diff");
+                    DiffCommandReceived.Invoke(this, new ConnectionEventArgs<DiffCommand>() { Value = (DiffCommand)command });
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+        }
+    }
+}
