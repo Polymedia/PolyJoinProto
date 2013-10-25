@@ -52,7 +52,7 @@ namespace Polymedia.PolyJoin.Server
                 Connections.Remove(connection);
         }
 
-        public static void BroadcastSendDiff(DiffContainer diffContainer)
+        public static void BroadcastSendDiff(DiffItem diffItem)
         {
             var connections = new Dictionary<Connection, ServerWebSocketConnection>().ToList();
 
@@ -62,7 +62,7 @@ namespace Polymedia.PolyJoin.Server
             foreach (var connection in connections)
             {
                // if (connection.Key != _presenterConnection)
-                    connection.Value.SendDiff(diffContainer);
+                connection.Value.SendDiff(diffItem);
             }
         }
 

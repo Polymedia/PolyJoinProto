@@ -25,19 +25,19 @@ namespace Polymedia.PolyJoin.Client
             InitializeComponent();
         }
 
-        public void DrawDiff(DiffContainer diffContainer)
+        public void DrawDiff(DiffItem diffItem)
         {
             diffFrame = new Bitmap((int)(Screen.PrimaryScreen.Bounds.Width / _compr), (int)(Screen.PrimaryScreen.Bounds.Height / _compr));
             diffFrameGraphics = Graphics.FromImage(diffFrame);
 
             //using (Graphics oldFrameGraphics = Graphics.FromImage(oldFrame))
             //{
-                foreach (var p in diffContainer.Data)
-                {
-                    diffFrameGraphics.DrawImage(p.Value, p.Key);
+                //foreach (var p in diffContainer.Data)
+                //{
+                    diffFrameGraphics.DrawImage(diffItem.Bitmap, diffItem.Rectangle);
 
                     //oldFrameGraphics.DrawImage(p.Value, p.Key);
-                }
+                //}
             //}
 
                 var df = new Bitmap(diffFrame, pictureBox2.Width, pictureBox2.Height);

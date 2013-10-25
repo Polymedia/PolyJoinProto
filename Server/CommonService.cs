@@ -25,7 +25,7 @@ namespace Polymedia.PolyJoin.Server
 
         private static void ConnectionManagerOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> connectionEventArgs)
         {
-            ConnectionManager.BroadcastSendDiff(connectionEventArgs.Value.Container);
+            ConnectionManager.BroadcastSendDiff(connectionEventArgs.Value.DiffItem);
         }
     }
 }

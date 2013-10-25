@@ -15,6 +15,6 @@ namespace Polymedia.PolyJoin.Common
             CommandName = CommandName.Diff;
         }
 
-        public DiffContainer Container;
+        public DiffItem DiffItem;
     }
 }

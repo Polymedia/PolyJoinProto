@@ -26,10 +26,10 @@ namespace Polymedia.PolyJoin.Client
             SendCommand(command);
         }
 
-        public void SendDiff(DiffContainer container)
+        public void SendDiff(DiffItem diffItem)
         {
             DiffCommand command = new DiffCommand();
-            command.Container = container;
+            command.DiffItem = diffItem;
             SendCommand(command);
         }
 

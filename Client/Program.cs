@@ -73,8 +73,9 @@ namespace Polymedia.PolyJoin.Client
 
                                 diffContainer.Data = DiffContainer.Split(diffContainer.Data, 40000);
 
-                                clientWebSocketConnection.SendDiff(diffContainer);
-                                
+                                foreach (var s in diffContainer.Data)
+                                    clientWebSocketConnection.SendDiff(new DiffItem(s));
+
                                 Thread.Sleep(timeout);
                             }
 
@@ -93,7 +94,7 @@ namespace Polymedia.PolyJoin.Client
             clientWebSocketConnection.DiffCommandReceived += (sender, eventArgs) =>
                 {
                     if(!IsPresenter)
-                        mf.DrawDiff(eventArgs.Value.Container);
+                        mf.DrawDiff(eventArgs.Value.DiffItem);
                 };
 
             Application.Run(mf);

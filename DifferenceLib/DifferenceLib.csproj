@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="DiffDetector.cs" />
     <Compile Include="DiffContainer.cs" />
+    <Compile Include="DiffItem.cs" />
     <Compile Include="DiffManager.cs" />
     <Compile Include="IDiffManager.cs" />
     <Compile Include="MovedObject.cs" />
