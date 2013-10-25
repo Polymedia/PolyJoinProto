@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.IO;
@@ -14,15 +15,32 @@ namespace Polymedia.PolyJoin.Client
         private static Thread _diffThread = null;
         static Bitmap screenShot = null;
         private static DiffDetector _diffDetector;
+        private static float compr = 1;
+        private static int timeout = 330;
 
         private static bool IsPresenter = false;
 
         [STAThread]
         static void Main(string[] args)
         {
-            Connection connection = ConnectionManager.Connect();
+            compr = float.Parse(ConfigurationSettings.AppSettings["compr"]);
+            timeout = int.Parse(ConfigurationSettings.AppSettings["timeout"]);
+            
+            ConnectionManager connectionManager = new ConnectionManager();
 
-            ClientWebSocketConnection clientWebSocketConnection = new ClientWebSocketConnection(ConnectionManager.Connect());
+            ClientWebSocketConnection clientWebSocketConnection = new ClientWebSocketConnection(connectionManager.Connect());
+
+            clientWebSocketConnection.ConnectionStateChanged += (sender, eventArgs) =>
+                {
+                    if (eventArgs.Value)
+                    {
+                        clientWebSocketConnection.QueryState();
+                    }
+                    else
+                    {
+                        _runDiffThread = false;
+                    }
+                };
 
             #region
 
@@ -40,27 +58,24 @@ namespace Polymedia.PolyJoin.Client
                         {
                             _diffDetector = new DiffDetector();
                             screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
-                            while (true)
+                            while (_runDiffThread)
                             {
-                                if (_runDiffThread)
-                                {
-                                    screenShot = new Bitmap(screenShot, Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
-                                    Graphics screenShotGraphics = Graphics.FromImage(screenShot);
-                                    screenShotGraphics.CopyFromScreen(0, 0, 0, 0, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height));
+                                
+                                screenShot = new Bitmap(screenShot, Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+                                Graphics screenShotGraphics = Graphics.FromImage(screenShot);
+                                screenShotGraphics.CopyFromScreen(0, 0, 0, 0, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height));
 
+                                if (compr!=1)
+                                    screenShot = new Bitmap(screenShot, (int)(Screen.PrimaryScreen.Bounds.Width / compr), (int)(Screen.PrimaryScreen.Bounds.Height / compr));
 
-                                    //   if (_compr!=1)
-                                    //screenShot = new Bitmap(screenShot, (int)(Screen.PrimaryScreen.Bounds.Width / _compr), (int)(Screen.PrimaryScreen.Bounds.Height / _compr));
+                                screenShotGraphics = Graphics.FromImage(screenShot);
+                                DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
 
-                                    screenShotGraphics = Graphics.FromImage(screenShot);
-                                    DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
+                                diffContainer.Data = DiffContainer.Split(diffContainer.Data, 40000);
 
-                                    diffContainer.Data = DiffContainer.Split(diffContainer.Data, 40000);
-
-                                    clientWebSocketConnection.SendDiff(diffContainer);
-                                }
-
-                                Thread.Sleep(330);
+                                clientWebSocketConnection.SendDiff(diffContainer);
+                                
+                                Thread.Sleep(timeout);
                             }
 
                         });
@@ -81,14 +96,9 @@ namespace Polymedia.PolyJoin.Client
                         mf.DrawDiff(eventArgs.Value.Container);
                 };
 
-            //ждем подключения
-            Thread.Sleep(5000);
-            clientWebSocketConnection.QueryState();
-
-            
             Application.Run(mf);
 
-            connection.Stop();
+            connectionManager.Disconnect();
         }
     }
 }

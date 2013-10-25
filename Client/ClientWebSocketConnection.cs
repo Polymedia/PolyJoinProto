@@ -10,12 +10,14 @@ namespace Polymedia.PolyJoin.Client
 {
     public class ClientWebSocketConnection: ConnectionWrapper
     {
-        public event EventHandler<ConnectionEventArgs<StateCommand>> StateCommandReceived = delegate { };
-        public event EventHandler<ConnectionEventArgs<DiffCommand>> DiffCommandReceived = delegate { }; 
+        public event EventHandler<SimpleEventArgs<StateCommand>> StateCommandReceived = delegate { };
+        public event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
+        public event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged = delegate { }; 
         
         public ClientWebSocketConnection(IWebSocketConnection webSocketConnection)
             : base(webSocketConnection)
         {
+            webSocketConnection.ConnectionStateChanged += (sender, args) => ConnectionStateChanged.Invoke(this, args);
         }
 
         public void QueryState()
@@ -41,11 +43,11 @@ namespace Polymedia.PolyJoin.Client
             {
                 case CommandName.State:
                     Console.WriteLine("Command State");
-                    StateCommandReceived.Invoke(this, new ConnectionEventArgs<StateCommand>() { Value = (StateCommand)command });
+                    StateCommandReceived.Invoke(this, new SimpleEventArgs<StateCommand>() { Value = (StateCommand)command });
                     break;
                 case CommandName.Diff:
                     Console.WriteLine("Command Diff");
-                    DiffCommandReceived.Invoke(this, new ConnectionEventArgs<DiffCommand>() { Value = (DiffCommand)command });
+                    DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand>() { Value = (DiffCommand)command });
                     break;
                 default:
                     Console.WriteLine("Unknown command");

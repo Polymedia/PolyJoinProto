@@ -17,13 +17,13 @@ namespace Polymedia.PolyJoin.Server
             ConnectionManager.DiffCommandReceived += ConnectionManagerOnDiffCommandReceived;
         }
 
-        private static void ConnectionManagerOnGetStateCommandReceived(object sender, ConnectionEventArgs<GetStateCommand> connectionEventArgs)
+        private static void ConnectionManagerOnGetStateCommandReceived(object sender, SimpleEventArgs<GetStateCommand> connectionEventArgs)
         {
             ServerWebSocketConnection serverWebSocketConnection = sender as ServerWebSocketConnection;
             serverWebSocketConnection.SendState(ConferenceId, serverWebSocketConnection == ConnectionManager.PresenterConnection);
         }
 
-        private static void ConnectionManagerOnDiffCommandReceived(object sender, ConnectionEventArgs<DiffCommand> connectionEventArgs)
+        private static void ConnectionManagerOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> connectionEventArgs)
         {
             ConnectionManager.BroadcastSendDiff(connectionEventArgs.Value.Container);
         }

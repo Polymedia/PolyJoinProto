@@ -13,11 +13,14 @@ namespace Polymedia.PolyJoin.Common
         {
             get { return _webSocketConnection; }
         }
-        
+
+        public event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged = delegate { }; 
+
         public ConnectionWrapper(IWebSocketConnection webSocketConnection)
         {
             _webSocketConnection = webSocketConnection;
             _webSocketConnection.DataRecived += WebSocketConnectionOnDataRecived;
+            _webSocketConnection.ConnectionStateChanged += WebSocketConnectionOnConnectionStateChanged;
         }
 
         protected void SendCommand(Command command)
@@ -55,15 +58,15 @@ namespace Polymedia.PolyJoin.Common
             return (T)ByteArrayToObject(bytes);
         }
 
+        private void WebSocketConnectionOnConnectionStateChanged(object sender, WebSocketEventArgs<bool> webSocketEventArgs)
+        {
+            ConnectionStateChanged.Invoke(_webSocketConnection, webSocketEventArgs);
+        }
+
         private void WebSocketConnectionOnDataRecived(object sender, WebSocketEventArgs<byte[]> webSocketEventArgs)
         {
             Command command = ByteArrayToObject<Command>(webSocketEventArgs.Value);
             OnReceivedCommand(command);
         }
-    }
-
-    public class ConnectionEventArgs<T>: EventArgs where T: Command
-    {
-        public T Value { get; set; }
     }
 }

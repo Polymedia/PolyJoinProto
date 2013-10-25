@@ -20,6 +20,8 @@ namespace Polymedia.PolyJoin.Client
                 {
                     Console.WriteLine("OPENED");
                     _reconnect.Reset();
+
+                    ConnectionStateChanged.Invoke(this, new WebSocketEventArgs<bool>(true));
                 };
 
             _webSocket.Error += (sender, args) =>
@@ -32,6 +34,8 @@ namespace Polymedia.PolyJoin.Client
                 {
                     Console.WriteLine("CLOSED");
                     _reconnect.Set();
+
+                    ConnectionStateChanged.Invoke(this, new WebSocketEventArgs<bool>(false));
                 };
 
             _webSocket.MessageReceived += (sender, args) =>
@@ -104,6 +108,8 @@ namespace Polymedia.PolyJoin.Client
         public event EventHandler<WebSocketEventArgs<string>> MessageRecived = delegate { };
 
         public event EventHandler<WebSocketEventArgs<byte[]>> DataRecived = delegate { };
+
+        public event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged = delegate { }; 
 
         #endregion IWebSocketConnection
     }

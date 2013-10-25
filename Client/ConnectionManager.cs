@@ -7,9 +7,9 @@ namespace Polymedia.PolyJoin.Client
 {
     public class ConnectionManager
     {
-        private static Connection _connection = null;
+        private Connection _connection = null;
 
-        public static Connection Connect()
+        public Connection Connect()
         {
             if (_connection == null)
             {
@@ -17,6 +17,12 @@ namespace Polymedia.PolyJoin.Client
                 _connection.Start();
             }
             return _connection;
+        }
+
+        public void Disconnect()
+        {
+            if (_connection != null)
+                _connection.Stop();
         }
     }
 }

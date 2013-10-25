@@ -9,10 +9,18 @@ namespace Common
 
         event EventHandler<WebSocketEventArgs<string>> MessageRecived;
         event EventHandler <WebSocketEventArgs<byte[]>> DataRecived;
+        event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged; 
     }
 
     public class WebSocketEventArgs<T>: EventArgs
     {
+        public WebSocketEventArgs(){}
+        
+        public WebSocketEventArgs(T value)
+        {
+            Value = value;
+        }
+        
         public T Value { get; set; }
     }
 }
