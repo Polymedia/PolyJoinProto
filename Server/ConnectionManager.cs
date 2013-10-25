@@ -56,7 +56,7 @@ namespace Polymedia.PolyJoin.Server
         {
             var connections = new Dictionary<Connection, ServerWebSocketConnection>().ToList();
 
-            lock (connections)
+            lock (Connections)
                 connections = Connections.ToList();
 
             foreach (var connection in connections)

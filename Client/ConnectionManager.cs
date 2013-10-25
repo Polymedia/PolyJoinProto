@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 
@@ -13,7 +14,7 @@ namespace Polymedia.PolyJoin.Client
         {
             if (_connection == null)
             {
-                _connection = new Connection("ws://localhost:9080/PolyJoin");
+                _connection = new Connection("ws://" + ConfigurationSettings.AppSettings["ip"] + ":9080/PolyJoin");
                 _connection.Start();
             }
             return _connection;
