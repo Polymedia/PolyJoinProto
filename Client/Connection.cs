@@ -56,13 +56,13 @@ namespace Polymedia.PolyJoin.Client
                 {
                     while (!_stop)
                     {
-                        Console.WriteLine("Open socket");
-                        _webSocket.Open();
-
-                        _reconnect.WaitOne();
-
                         try
                         {
+                            Console.WriteLine("Open socket");
+                            _webSocket.Open();
+
+                            _reconnect.WaitOne();
+
                             Console.WriteLine("Close socket");
                             _webSocket.Close();
                         }
@@ -95,7 +95,7 @@ namespace Polymedia.PolyJoin.Client
         {
             try
             {
-                Debug.Assert(data.Length <= 65536, "Trying send big data");
+                Debug.Assert(data.Length <= 65536, "Sending big data to server");
 
                 _webSocket.Send(data, 0, data.Length);
             }

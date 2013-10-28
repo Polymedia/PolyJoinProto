@@ -6,14 +6,16 @@ using System.Text;
 namespace Polymedia.PolyJoin.Common
 {
     [Serializable]
-    public class StateCommand: Command
+    public class StateCommand : Command
     {
         public StateCommand()
         {
             CommandName = CommandName.State;
         }
-        
+
         public int ConferenceId { get; set; }
         public bool IsPresenter { get; set; }
+        public int PresenterWidth { get; set; }
+        public int PresenterHeight { get; set; }
     }
 }

@@ -107,11 +107,24 @@ namespace DifferenceLib
             }
         }
 
-        public static byte[] ImageToByteArray(System.Drawing.Image imageIn)
+        public static Image ByteArrayToImage(byte[] byteArray)
+        {
+            using (MemoryStream ms = new MemoryStream(byteArray))
+            {
+                //PngBitmapDecoder decoder = new PngBitmapDecoder(ms, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+                //BitmapSource bitmapSource = decoder.Frames[0];
+                //return GetBitmap(bitmapSource);
+
+                Image image = Image.FromStream(new MemoryStream(byteArray));
+                return image;
+            }
+        }
+
+        public static byte[] ImageToByteArray(Image imageIn)
         {
             using (MemoryStream ms = new MemoryStream())
             {
-                imageIn.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                imageIn.Save(ms, ImageFormat.Jpeg);
                 return ms.ToArray();
             }
         }

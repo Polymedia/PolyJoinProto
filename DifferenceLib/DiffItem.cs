@@ -9,13 +9,19 @@ namespace DifferenceLib
     [Serializable]
     public class DiffItem
     {
-        public Rectangle Rectangle;
-        public Bitmap Bitmap;
-
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public byte[] ImageBytes { get; set; }
+        
         public DiffItem(Rectangle rectangle, Bitmap bitmap)
         {
-            Rectangle = rectangle;
-            Bitmap = bitmap;
+            X = rectangle.X;
+            Y = rectangle.Y;
+            Width = rectangle.Width;
+            Height = rectangle.Height;
+            ImageBytes = DiffContainer.ImageToByteArray(bitmap);
         }
 
         public DiffItem(KeyValuePair<Rectangle, Bitmap> dataItem)

@@ -21,7 +21,7 @@ namespace Polymedia.PolyJoin.Server
             new Uri("ws://localhost:9080/PolyJoin"));
 
             var binding =
-                WebSocketHost.CreateWebSocketBinding(https: false, sendBufferSize: 2048, receiveBufferSize: 2048);
+                WebSocketHost.CreateWebSocketBinding(https: false, sendBufferSize: int.MaxValue, receiveBufferSize: int.MaxValue);
 
             binding.SendTimeout = TimeSpan.FromMilliseconds(5000);
             binding.OpenTimeout = TimeSpan.FromDays(1);

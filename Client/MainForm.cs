@@ -1,52 +1,98 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using DifferenceLib;
+using Polymedia.PolyJoin.Common;
 
 namespace Polymedia.PolyJoin.Client
 {
     public partial class MainForm : Form
     {
-        Bitmap oldFrame = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+        Bitmap diffFrame = null;
 
-        Bitmap diffFrame;
+        private Queue _queue = Queue.Synchronized(new Queue());
 
-        Graphics diffFrameGraphics;
+        private bool _processCommands = new bool();
 
-        private int _compr = 1;
-        
+        private Thread t;
+
         public MainForm()
         {
             InitializeComponent();
+
+            FormClosed += (sender, ea) => { _processCommands = false; };
         }
 
-        public void DrawDiff(DiffItem diffItem)
+        public void Init(int width, int height)
         {
-            diffFrame = new Bitmap((int)(Screen.PrimaryScreen.Bounds.Width / _compr), (int)(Screen.PrimaryScreen.Bounds.Height / _compr));
-            diffFrameGraphics = Graphics.FromImage(diffFrame);
+            diffFrame = new Bitmap(width, height);
 
-            //using (Graphics oldFrameGraphics = Graphics.FromImage(oldFrame))
-            //{
-                //foreach (var p in diffContainer.Data)
-                //{
-                    diffFrameGraphics.DrawImage(diffItem.Bitmap, diffItem.Rectangle);
+            _processCommands = false;
+            if (t != null)
+                while (t.IsAlive)
+                    Thread.Sleep(50);
 
-                    //oldFrameGraphics.DrawImage(p.Value, p.Key);
-                //}
-            //}
+            _processCommands = true;
 
-                var df = new Bitmap(diffFrame, pictureBox2.Width, pictureBox2.Height);
-            //var of = new Bitmap(oldFrame, pictureBox2.Width, pictureBox2.Height);
-            
+            t = new Thread(() =>
+                {
+                    bool draw = false;
 
-            //pictureBox1.Image = df;
+                    while (_processCommands)
+                    {
+                        try
+                        {
+                            Console.WriteLine("Queue count = " + _queue.Count);
 
-            pictureBox2.Image = df;
+                            if (_queue.Count != 0)
+                            {
+                                DiffCommand diffCommand = (DiffCommand) _queue.Dequeue();
+
+                                using (Graphics diffFrameGraphics = Graphics.FromImage(diffFrame))
+                                {
+                                    diffFrameGraphics.DrawImage(
+                                        DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
+                                        diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
+                                        diffCommand.DiffItem.Width, diffCommand.DiffItem.Height);
+                                }
+
+                                draw = true;
+                            }
+                            else
+                            {
+                                if (draw)
+                                {
+                                    var df = new Bitmap(diffFrame, pictureBox2.Width, pictureBox2.Height);
+                                    pictureBox2.Image = df;
+                                }
+                                else
+                                {
+                                    Thread.Sleep(50);
+                                }
+
+                                draw = false;
+                            }
+
+                            GC.Collect();
+                        }
+                        catch
+                        {
+                        }
+                    }
+                });
+            t.Start();
+        }
+
+        public void AddDiffCommand(DiffCommand diffCommand)
+        {
+            _queue.Enqueue(diffCommand);
         }
     }
 }

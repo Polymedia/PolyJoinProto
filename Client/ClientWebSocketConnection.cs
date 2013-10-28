@@ -20,9 +20,9 @@ namespace Polymedia.PolyJoin.Client
             webSocketConnection.ConnectionStateChanged += (sender, args) => ConnectionStateChanged.Invoke(this, args);
         }
 
-        public void QueryState()
+        public void QueryState(int width, int height)
         {
-            Command command = new GetStateCommand();
+            Command command = new QueryStateCommand(width, height);
             SendCommand(command);
         }
 

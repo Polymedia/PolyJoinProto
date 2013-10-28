@@ -15,7 +15,7 @@ namespace Polymedia.PolyJoin.Server
         private static Connection _presenterConnection = null;
         public static ServerWebSocketConnection PresenterConnection = null;
 
-        public static event EventHandler<SimpleEventArgs<GetStateCommand>> GetStateCommandReceived = delegate { };
+        public static event EventHandler<SimpleEventArgs<QueryStateCommand>> GetStateCommandReceived = delegate { };
         public static event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
 
         public static void AddConnection(Connection connection)
@@ -61,12 +61,12 @@ namespace Polymedia.PolyJoin.Server
 
             foreach (var connection in connections)
             {
-               // if (connection.Key != _presenterConnection)
-                connection.Value.SendDiff(diffItem);
+                if (connection.Key != _presenterConnection)
+                    connection.Value.SendDiff(diffItem);
             }
         }
 
-        private static void ServerWebSocketConnectionOnGetStateCommandReceived(object sender, SimpleEventArgs<GetStateCommand> connectionEventArgs)
+        private static void ServerWebSocketConnectionOnGetStateCommandReceived(object sender, SimpleEventArgs<QueryStateCommand> connectionEventArgs)
         {
             GetStateCommandReceived.Invoke(sender, connectionEventArgs);
         }

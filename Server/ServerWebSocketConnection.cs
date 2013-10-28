@@ -11,18 +11,20 @@ namespace Polymedia.PolyJoin.Server
 {
     class ServerWebSocketConnection: ConnectionWrapper
     {
-        public event EventHandler<SimpleEventArgs<GetStateCommand>> GetStateCommandReceived = delegate { };
+        public event EventHandler<SimpleEventArgs<QueryStateCommand>> GetStateCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { }; 
         
         public ServerWebSocketConnection(IWebSocketConnection webSocketConnection) : base(webSocketConnection)
         {
         }
 
-        public void SendState(int conferenceId, bool isPresenter)
+        public void SendState(int conferenceId, bool isPresenter, int presenterWidth, int presenterHeight)
         {
             StateCommand command = new StateCommand();
             command.ConferenceId = conferenceId;
             command.IsPresenter = isPresenter;
+            command.PresenterWidth = presenterWidth;
+            command.PresenterHeight = presenterHeight;
             SendCommand(command);
         }
 
@@ -41,7 +43,7 @@ namespace Polymedia.PolyJoin.Server
             {
                 case CommandName.GetState:
                     Console.WriteLine("Command GetState");
-                    GetStateCommandReceived.Invoke(this, new SimpleEventArgs<GetStateCommand>() { Value = (GetStateCommand)command });
+                    GetStateCommandReceived.Invoke(this, new SimpleEventArgs<QueryStateCommand>() { Value = (QueryStateCommand)command });
                     break;
                 case CommandName.Diff:
                     Console.WriteLine("Command Diff");

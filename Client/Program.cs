@@ -13,7 +13,6 @@ namespace Polymedia.PolyJoin.Client
     {
         private static volatile Boolean _runDiffThread = true;
         private static Thread _diffThread = null;
-        static Bitmap screenShot = null;
         private static DiffDetector _diffDetector;
         private static float compr = 1;
         private static int timeout = 330;
@@ -25,6 +24,11 @@ namespace Polymedia.PolyJoin.Client
         {
             compr = float.Parse(ConfigurationSettings.AppSettings["compr"]);
             timeout = int.Parse(ConfigurationSettings.AppSettings["timeout"]);
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            var mf = new MainForm();
             
             ConnectionManager connectionManager = new ConnectionManager();
 
@@ -33,13 +37,9 @@ namespace Polymedia.PolyJoin.Client
             clientWebSocketConnection.ConnectionStateChanged += (sender, eventArgs) =>
                 {
                     if (eventArgs.Value)
-                    {
-                        clientWebSocketConnection.QueryState();
-                    }
+                        clientWebSocketConnection.QueryState((int)(Screen.PrimaryScreen.Bounds.Width / compr), (int)(Screen.PrimaryScreen.Bounds.Height / compr));
                     else
-                    {
                         _runDiffThread = false;
-                    }
                 };
 
             #region
@@ -48,37 +48,54 @@ namespace Polymedia.PolyJoin.Client
                 {
                     Console.WriteLine(eventArgs.Value.ConferenceId + " " + eventArgs.Value.IsPresenter);
                     IsPresenter = eventArgs.Value.IsPresenter;
-                    if (eventArgs.Value.IsPresenter)
+
+                    mf.Init(eventArgs.Value.PresenterWidth, eventArgs.Value.PresenterHeight);
+
+                    if (IsPresenter)
                     {
                         _runDiffThread = false;
-                        _runDiffThread = new bool();
+
+                        if(_diffThread != null)
+                            while (_diffThread.IsAlive)
+                                Thread.Sleep(50);
+
                         _runDiffThread = true;
 
                         _diffThread = new Thread(() =>
                         {
                             _diffDetector = new DiffDetector();
-                            screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
                             while (_runDiffThread)
                             {
-                                
-                                screenShot = new Bitmap(screenShot, Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
-                                Graphics screenShotGraphics = Graphics.FromImage(screenShot);
-                                screenShotGraphics.CopyFromScreen(0, 0, 0, 0, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height));
+                                try
+                                {
+                                    Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+                                                                   Screen.PrimaryScreen.Bounds.Height);
 
-                                if (compr!=1)
-                                    screenShot = new Bitmap(screenShot, (int)(Screen.PrimaryScreen.Bounds.Width / compr), (int)(Screen.PrimaryScreen.Bounds.Height / compr));
+                                        using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
+                                        {
+                                            screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
+                                                                              new Size(
+                                                                                  Screen.PrimaryScreen.Bounds.Width,
+                                                                                  Screen.PrimaryScreen.Bounds.Height));
 
-                                screenShotGraphics = Graphics.FromImage(screenShot);
-                                DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
+                                            if (compr != 1)
+                                                screenShot = new Bitmap(screenShot,
+                                                                        (int) (Screen.PrimaryScreen.Bounds.Width/compr),
+                                                                        (int) (Screen.PrimaryScreen.Bounds.Height/compr));
+                                        }
+                                        DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
 
-                                diffContainer.Data = DiffContainer.Split(diffContainer.Data, 40000);
+                                        diffContainer.Data = DiffContainer.Split(diffContainer.Data, 40000);
 
-                                foreach (var s in diffContainer.Data)
-                                    clientWebSocketConnection.SendDiff(new DiffItem(s));
-
+                                        foreach (var s in diffContainer.Data)
+                                            clientWebSocketConnection.SendDiff(new DiffItem(s));
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("EXCEPTION!");
+                                }
                                 Thread.Sleep(timeout);
                             }
-
                         });
                         _diffThread.Start();
                     }
@@ -86,15 +103,11 @@ namespace Polymedia.PolyJoin.Client
 
             #endregion
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-            MainForm mf = new MainForm();
-
             clientWebSocketConnection.DiffCommandReceived += (sender, eventArgs) =>
                 {
                     if(!IsPresenter)
-                        mf.DrawDiff(eventArgs.Value.DiffItem);
+                        mf.AddDiffCommand(eventArgs.Value);
+                        
                 };
 
             Application.Run(mf);

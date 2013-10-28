@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -81,6 +82,7 @@ namespace Polymedia.PolyJoin.Server
             //async/await?
             try
             {
+                Debug.Assert(data.Length <= 65536, "Sending big data to client");
                 Send(data);
             }
             catch
