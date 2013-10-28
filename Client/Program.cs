@@ -49,27 +49,27 @@ namespace Polymedia.PolyJoin.Client
                     Console.WriteLine(eventArgs.Value.ConferenceId + " " + eventArgs.Value.IsPresenter);
                     IsPresenter = eventArgs.Value.IsPresenter;
 
-                    mf.Init(eventArgs.Value.PresenterWidth, eventArgs.Value.PresenterHeight);
+                    mf.SetIsPresenter(IsPresenter, eventArgs.Value.PresenterWidth, eventArgs.Value.PresenterHeight);
 
                     if (IsPresenter)
                     {
                         _runDiffThread = false;
 
-                        if(_diffThread != null)
+                        if (_diffThread != null)
                             while (_diffThread.IsAlive)
                                 Thread.Sleep(50);
 
                         _runDiffThread = true;
 
                         _diffThread = new Thread(() =>
-                        {
-                            _diffDetector = new DiffDetector();
-                            while (_runDiffThread)
                             {
-                                try
+                                _diffDetector = new DiffDetector();
+                                while (_runDiffThread)
                                 {
-                                    Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
-                                                                   Screen.PrimaryScreen.Bounds.Height);
+                                    try
+                                    {
+                                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+                                                                       Screen.PrimaryScreen.Bounds.Height);
 
                                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
                                         {
@@ -89,16 +89,18 @@ namespace Polymedia.PolyJoin.Client
 
                                         foreach (var s in diffContainer.Data)
                                             clientWebSocketConnection.SendDiff(new DiffItem(s));
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("EXCEPTION!");
+                                    }
+                                    Thread.Sleep(timeout);
                                 }
-                                catch
-                                {
-                                    Console.WriteLine("EXCEPTION!");
-                                }
-                                Thread.Sleep(timeout);
-                            }
-                        });
+                            });
                         _diffThread.Start();
                     }
+                    else
+                        mf.StartProcessingCommands();
                 };
 
             #endregion
@@ -107,7 +109,6 @@ namespace Polymedia.PolyJoin.Client
                 {
                     if(!IsPresenter)
                         mf.AddDiffCommand(eventArgs.Value);
-                        
                 };
 
             Application.Run(mf);
