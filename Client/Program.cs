@@ -13,7 +13,7 @@ namespace Polymedia.PolyJoin.Client
     {
         private static volatile Boolean _runDiffThread = true;
         private static Thread _diffThread = null;
-        private static DiffDetector _diffDetector;
+        private static IDiffDetector _diffDetector;
         private static float compr = 1;
         private static int timeout = 330;
 
@@ -63,7 +63,7 @@ namespace Polymedia.PolyJoin.Client
 
                         _diffThread = new Thread(() =>
                             {
-                                _diffDetector = new DiffDetector();
+                                _diffDetector = new CustomDiffDetector();
                                 while (_runDiffThread)
                                 {
                                     try
@@ -78,7 +78,7 @@ namespace Polymedia.PolyJoin.Client
                                                                                   Screen.PrimaryScreen.Bounds.Width,
                                                                                   Screen.PrimaryScreen.Bounds.Height));
 
-                                            if (compr != 1)
+                                            if (Math.Abs(compr - 1) > 0.01)
                                                 screenShot = new Bitmap(screenShot,
                                                                         (int) (Screen.PrimaryScreen.Bounds.Width/compr),
                                                                         (int) (Screen.PrimaryScreen.Bounds.Height/compr));

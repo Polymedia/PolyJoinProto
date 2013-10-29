@@ -52,9 +52,11 @@ namespace Polymedia.PolyJoin.Client
                             if (_queue.Count != 0)
                             {
                                 DiffCommand diffCommand = (DiffCommand) _queue.Dequeue();
+                                //_diffFrame = new Bitmap(_presenterWidth, _presenterHeight);
 
                                 using (Graphics diffFrameGraphics = Graphics.FromImage(_diffFrame))
                                 {
+
                                     diffFrameGraphics.DrawImage(
                                         DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
                                         diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
