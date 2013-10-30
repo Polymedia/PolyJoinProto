@@ -20,15 +20,15 @@ namespace Polymedia.PolyJoin.Client
             webSocketConnection.ConnectionStateChanged += (sender, args) => ConnectionStateChanged.Invoke(this, args);
         }
 
-        public void QueryState(int width, int height)
+        public void QueryState(string conferenceId, int width, int height)
         {
-            Command command = new QueryStateCommand(width, height);
+            Command command = new QueryStateCommand(conferenceId, width, height);
             SendCommand(command);
         }
 
-        public void SendDiff(DiffItem diffItem)
+        public void SendDiff(string conferenceId, DiffItem diffItem)
         {
-            DiffCommand command = new DiffCommand();
+            DiffCommand command = new DiffCommand(conferenceId);
             command.DiffItem = diffItem;
             SendCommand(command);
         }

@@ -10,13 +10,20 @@ namespace Polymedia.PolyJoin.Client
     {
         private Connection _connection = null;
 
+        public string ServerIp { get; set; }
+
+        public Connection GetConnection()
+        {
+            if (_connection == null)
+                _connection = new Connection("ws://" + ServerIp + ":9080/PolyJoin");
+            return _connection;
+        }
+
         public Connection Connect()
         {
             if (_connection == null)
-            {
-                _connection = new Connection("ws://" + ConfigurationSettings.AppSettings["ip"] + ":9080/PolyJoin");
-                _connection.Start();
-            }
+                _connection = new Connection("ws://" + ServerIp + ":9080/PolyJoin");
+            _connection.Start();
             return _connection;
         }
 
@@ -24,6 +31,7 @@ namespace Polymedia.PolyJoin.Client
         {
             if (_connection != null)
                 _connection.Stop();
+            _connection = null;
         }
     }
 }

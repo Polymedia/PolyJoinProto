@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Common;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 
@@ -15,117 +16,236 @@ namespace Polymedia.PolyJoin.Client
 {
     public partial class MainForm : Form
     {
-        Bitmap _diffFrame = null;
+        private ClientWebSocketConnection _clientWebSocketConnection = null;
+
+        private bool _runDiffDetectThread = false;
+        private Thread _diffDetectThread = null;
+
         private Queue _queue = Queue.Synchronized(new Queue());
-        private bool _processCommands = false;
-        private Thread _processCommandsThread;
+
+        private bool _runProcessCommandsThread = false;
+        private Thread _processCommandsThread = null;
+
+        public ClientWebSocketConnection ClientWebSocketConnection
+        {
+            set
+            {
+                _clientWebSocketConnection = value;
+                _clientWebSocketConnection.ConnectionStateChanged += ClientWebSocketConnectionOnConnectionStateChanged;
+                _clientWebSocketConnection.StateCommandReceived += ClientWebSocketConnectionOnStateCommandReceived;
+                _clientWebSocketConnection.DiffCommandReceived += ClientWebSocketConnectionOnDiffCommandReceived;
+            }
+            private get { return _clientWebSocketConnection; }
+        }
+
+        public float ScreenshotScale { get; set; }
+        public int ScreenshotTimeout { get; set; }
+
+        public string ConferenceId { get; set; }
 
         private bool _isPresenter;
         private int _presenterWidth;
         private int _presenterHeight;
 
+        private Bitmap _diffFrame = null;
+
         public MainForm()
         {
             InitializeComponent();
-            FormClosed += (sender, ea) => { _processCommands = false; };
+
+            conferenceIdValueLabel.DoubleClick += (sender, args) => { Clipboard.SetText(conferenceIdValueLabel.Text); };
+            
+            FormClosed += (sender, ea) =>
+                {
+                    _runProcessCommandsThread = false;
+                    _runDiffDetectThread = false;
+                    _isPresenter = false;
+                    _presenterWidth = 0;
+                    _presenterHeight = 0;
+
+                    conferenceIdValueLabel.Text = string.Empty;
+                    pictureBox.Image = null;
+                    roleValueLabel.Text = string.Empty;
+                };
+
+            FormClosing += (sender, ea) =>
+            {
+                Hide();
+                ea.Cancel = true;
+                if (_clientWebSocketConnection != null)
+                    _clientWebSocketConnection.ConnectionStateChanged -=
+                        ClientWebSocketConnectionOnConnectionStateChanged;
+            };
         }
 
-        public void StartProcessingCommands()
+        private void ClientWebSocketConnectionOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> simpleEventArgs)
         {
-            _processCommands = false;
+            _queue.Enqueue(simpleEventArgs.Value);
+        }
+
+        private void ClientWebSocketConnectionOnStateCommandReceived(object sender, SimpleEventArgs<StateCommand> simpleEventArgs)
+        {
+            Invoke(new Action(() =>
+                {
+                    StateCommand stateCommand = simpleEventArgs.Value;
+                    if (string.IsNullOrEmpty(stateCommand.ConferenceId))
+                    {
+                        MessageBox.Show(this, "Unable create or join conference! Retry later!");
+                        Close();
+                    }
+                    else
+                    {
+                        ConferenceId = stateCommand.ConferenceId;
+                        _isPresenter = stateCommand.IsPresenter;
+                        _presenterWidth = stateCommand.PresenterWidth;
+                        _presenterHeight = stateCommand.PresenterHeight;
+
+                        if (_isPresenter)
+                            StartDiffDetectThread();
+
+                        StartProcessCommandsThread();
+
+                        conferenceIdValueLabel.Text = ConferenceId;
+
+                        _diffFrame = new Bitmap(_presenterWidth, _presenterHeight);
+
+                        roleValueLabel.Text = _isPresenter ? "Presenter" : "Viewer";
+                    }
+                }));
+        }
+
+        private void ClientWebSocketConnectionOnConnectionStateChanged(object sender, WebSocketEventArgs<bool> webSocketEventArgs)
+        {
+            Invoke(new Action(() =>
+                {
+                    if (webSocketEventArgs.Value)
+                    {
+                        connectionStateValueLabel.Text = "Connected";
+
+                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(Screen.PrimaryScreen.Bounds.Width * ScreenshotScale), (int)(Screen.PrimaryScreen.Bounds.Height * ScreenshotScale));
+                    }
+                    else
+                    {
+                        connectionStateValueLabel.Text = "Connecting...";
+                        _runDiffDetectThread = false;
+                        _runProcessCommandsThread = false;
+                    }
+                }));
+        }
+
+        public void StartProcessCommandsThread()
+        {
+            _runProcessCommandsThread = false;
             if (_processCommandsThread != null)
                 while (_processCommandsThread.IsAlive)
-                    Thread.Sleep(50);
+                    Thread.Sleep(100);
 
-            _processCommands = true;
+            _runProcessCommandsThread = true;
 
             _processCommandsThread = new Thread(() =>
+            {
+                bool draw = false;
+
+                while (_runProcessCommandsThread)
                 {
-                    bool draw = false;
-
-                    while (_processCommands)
+                    try
                     {
-                        try
+                        Console.WriteLine("Queue count = " + _queue.Count);
+
+                        if (_queue.Count != 0)
                         {
-                            Console.WriteLine("Queue count = " + _queue.Count);
+                            DiffCommand diffCommand = (DiffCommand)_queue.Dequeue();
 
-                            if (_queue.Count != 0)
+                            using (Graphics diffFrameGraphics = Graphics.FromImage(_diffFrame))
                             {
-                                DiffCommand diffCommand = (DiffCommand) _queue.Dequeue();
+                                diffFrameGraphics.DrawImage(
+                                    DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
+                                    diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
+                                    diffCommand.DiffItem.Width, diffCommand.DiffItem.Height);
+                            }
 
-                                using (Graphics diffFrameGraphics = Graphics.FromImage(_diffFrame))
-                                {
-                                    diffFrameGraphics.DrawImage(
-                                        DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
-                                        diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
-                                        diffCommand.DiffItem.Width, diffCommand.DiffItem.Height);
-                                }
-
-                                draw = true;
+                            draw = true;
+                        }
+                        else
+                        {
+                            if (draw)
+                            {
+                                pictureBox.Invoke(new Action(
+                                                      () =>
+                                                      {
+                                                          pictureBox.Image = _diffFrame;
+                                                          pictureBox.Refresh();
+                                                      })
+                                    );
                             }
                             else
                             {
-                                if (draw)
-                                {
-                                    pictureBox.Invoke(new Action(
-                                                          () =>
-                                                              {
-                                                                  pictureBox.Image = _diffFrame;
-                                                                  pictureBox.Refresh();
-                                                              }
-                                                          )
-                                        );
-                                }
-                                else
-                                {
-                                    Thread.Sleep(50);
-                                }
-
-                                draw = false;
+                                Thread.Sleep(100);
                             }
 
-                            GC.Collect();
+                            draw = false;
                         }
-                        catch
-                        {
-                        }
+
+                        GC.Collect();
                     }
-                });
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine("_processCommandsThread : " + ex.Message);
+                    }
+                }
+            });
             _processCommandsThread.Start();
         }
 
-        public void AddDiffCommand(DiffCommand diffCommand)
+        public void StartDiffDetectThread()
         {
-            _queue.Enqueue(diffCommand);
-        }
+            _runDiffDetectThread = false;
 
-        public void SetIsPresenter(bool isPresenter, int width, int height)
-        {
-            _isPresenter = isPresenter;
-            _presenterWidth = width;
-            _presenterHeight = height;
+            if (_diffDetectThread != null)
+                while (_diffDetectThread.IsAlive)
+                    Thread.Sleep(100);
 
-            _diffFrame = new Bitmap(_presenterWidth, _presenterHeight);
+            _runDiffDetectThread = true;
 
-            if(_isPresenter)
-                using (Graphics diffFrameGraphics = Graphics.FromImage(_diffFrame))
+            _diffDetectThread = new Thread(() =>
+            {
+                DiffDetector _diffDetector = new DiffDetector();
+                while (_runDiffDetectThread)
                 {
-                    string text = "Presenter";
-                    Font font = new Font("Arial", 30);
+                    try
+                    {
+                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+                                                       Screen.PrimaryScreen.Bounds.Height);
 
-                    SizeF size = diffFrameGraphics.MeasureString(text, font);
+                        using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
+                        {
+                            screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
+                                                              new Size(
+                                                                  Screen.PrimaryScreen.Bounds.Width,
+                                                                  Screen.PrimaryScreen.Bounds.Height));
 
-                    diffFrameGraphics.DrawString("Presenter", font, new SolidBrush(Color.Silver), new PointF(_presenterWidth / 2 - size.Width / 2, _presenterHeight / 2 - size.Height / 2));
-                    pictureBox.Invoke(new Action(
-                                          () =>
-                                              {
-                                                  pictureBox.Image = _diffFrame;
-                                                  pictureBox.Refresh();
-                                              }
-                                          )
-                        );
+                            if (ScreenshotScale != 1)
+                                screenShot = new Bitmap(screenShot,
+                                                        (int)
+                                                        (Screen.PrimaryScreen.Bounds.Width * ScreenshotScale),
+                                                        (int)
+                                                        (Screen.PrimaryScreen.Bounds.Height * ScreenshotScale));
+                        }
+                        DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
+
+                        diffContainer.Data = DiffContainer.Split(diffContainer.Data, 40000);
+
+                        foreach (var s in diffContainer.Data)
+                            ClientWebSocketConnection.SendDiff(ConferenceId, new DiffItem(s));
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine("_diffDetectThread : " + ex.Message );
+                    }
+                    Thread.Sleep(ScreenshotTimeout);
                 }
-
+            });
+            _diffDetectThread.Start();
         }
     }
 }

@@ -13,21 +13,15 @@ namespace Polymedia.PolyJoin.Server
 {
     class CommonService
     {
-        private static int ConferenceId = 123;
-
-        private static Graphics graphics;
-
-        private static Bitmap bitmap;
-
-        private static object syncObj = new object();
-
         private static Queue queue = Queue.Synchronized(new Queue());
+
+        private static Dictionary<string, Conference> conferences = new Dictionary<string, Conference>();
+        private static Dictionary<ServerWebSocketConnection, string> connections = new Dictionary<ServerWebSocketConnection, string>(); 
 
         public static void Init()
         {
             ConnectionManager.GetStateCommandReceived += ConnectionManagerOnGetStateCommandReceived;
             ConnectionManager.DiffCommandReceived += ConnectionManagerOnDiffCommandReceived;
-
 
             Thread thread = new Thread(() => { 
                 while(true)
@@ -50,31 +44,57 @@ namespace Polymedia.PolyJoin.Server
                 if (command is QueryStateCommand)
                 {
                     var queryStateCommand = command as QueryStateCommand;
-                    
-                    if (command.SenderConnection == ConnectionManager.PresenterConnection)
-                    {
-                        bitmap = new Bitmap(queryStateCommand.Width, queryStateCommand.Height);
-                        graphics = Graphics.FromImage(bitmap);
-                    }
 
-                    if (bitmap == null || graphics == null)
+                    Conference conference = null;
+                    //Если пришел запрос состояния без id конференции (на создание)
+                    if (string.IsNullOrWhiteSpace(queryStateCommand.ConferenceId))
                     {
-                        queue.Enqueue(command);
+                        string id = Conference.GenerateId();
+                        while (conferences.Keys.Contains(id))
+                            id = Conference.GenerateId();
+                        
+                        conference = Conference.Start(id, (ServerWebSocketConnection) queryStateCommand.SenderConnection,
+                                                      queryStateCommand.Width, queryStateCommand.Height);
+
+                        queryStateCommand.SenderConnection.ConnectionStateChanged += (sender, args) =>
+                            {
+                                DisconnectCommand disconnectCommand = new DisconnectCommand();
+                                disconnectCommand.SenderConnection = queryStateCommand.SenderConnection;
+
+                                queue.Enqueue(disconnectCommand);
+                            };
+
+                        conferences.Add(conference.Id, conference);
+                        connections.Add((ServerWebSocketConnection)queryStateCommand.SenderConnection, conference.Id);
+                    }
+                    else
+                        conferences.TryGetValue(queryStateCommand.ConferenceId, out conference);
+
+                    if (conference != null)
+                    {
+                        conference.AddConnection((ServerWebSocketConnection)queryStateCommand.SenderConnection);
+                        
+                        ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendState(conference.Id, command.SenderConnection == conference.PresenterConnection,
+                            (int)conference.Bitmap.Size.Width, (int)conference.Bitmap.Size.Height);
+
+                        //TODO send connections list
+                    }
+                    else
+                    {
+                        ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendState(string.Empty, false, 0, 0);
                         return;
                     }
-
-                    ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendState(ConferenceId, command.SenderConnection == ConnectionManager.PresenterConnection, (int)bitmap.Size.Width, (int)bitmap.Size.Height);
-
-                    if (command.SenderConnection != ConnectionManager.PresenterConnection)
+                    
+                    if (command.SenderConnection != conference.PresenterConnection)
                     {
                         //Отсылаем последний вариант картинки
                         var data = DiffContainer.Split(
                             new KeyValuePair<Rectangle, Bitmap>(
-                                new Rectangle(0, 0, (int)bitmap.Size.Width, (int)bitmap.Size.Height), bitmap), 40000);
+                                new Rectangle(0, 0, (int)conference.Bitmap.Size.Width, (int)conference.Bitmap.Size.Height), conference.Bitmap), 50000);
 
                         foreach (var d in data)
                         {
-                            ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendDiff(new DiffItem(d));
+                            ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendDiff(conference.Id, new DiffItem(d));
                         }
                     }
                 }
@@ -82,11 +102,40 @@ namespace Polymedia.PolyJoin.Server
                 {
                     var diffCommand = command as DiffCommand;
 
-                    graphics.DrawImage(DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
+                    Conference conference = conferences[diffCommand.ConferenceId];
+
+                    if(conference == null)
+                        return;
+
+                    conference.Graphics.DrawImage(DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
                                                         diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
                                                         diffCommand.DiffItem.Width, diffCommand.DiffItem.Height);
 
-                    ConnectionManager.BroadcastSendDiff(diffCommand.DiffItem);
+                    foreach (var connection in conference.GetConnectionsCopy())
+                    {
+                        if (connection == conference.PresenterConnection)
+                            continue;
+                        connection.SendDiff(conference.Id, diffCommand.DiffItem);
+                    }
+                }else if (command is DisconnectCommand)
+                {
+                    var disconnectCommand = command as DisconnectCommand;
+
+                    string conferenceId =
+                        connections[((ServerWebSocketConnection)disconnectCommand.SenderConnection)];
+                    connections.Remove(((ServerWebSocketConnection)disconnectCommand.SenderConnection));
+
+                    Conference conference = null;
+                    conferences.TryGetValue(conferenceId, out conference);
+
+                    if (conference != null)
+                    {
+                        conference.RemoveConnection(((ServerWebSocketConnection) disconnectCommand.SenderConnection));
+                        if (conference.Connections.Count == 0 || conference.PresenterConnection == null)
+                            conferences.Remove(conferenceId);
+                    }
+
+                    //TODO send connections list
                 }
             }
         }
@@ -94,48 +143,62 @@ namespace Polymedia.PolyJoin.Server
         private static void ConnectionManagerOnGetStateCommandReceived(object sender, SimpleEventArgs<QueryStateCommand> connectionEventArgs)
         {
             queue.Enqueue(connectionEventArgs.Value);
-            
-            
-            //ServerWebSocketConnection serverWebSocketConnection = sender as ServerWebSocketConnection;
-
-            //lock (syncObj) 
-            //{
-            //    if (serverWebSocketConnection == ConnectionManager.PresenterConnection)
-            //    {
-            //        bitmap = new Bitmap(connectionEventArgs.Value.Width, connectionEventArgs.Value.Height);
-            //        graphics = Graphics.FromImage(bitmap);
-            //    }
-
-            //    serverWebSocketConnection.SendState(ConferenceId, serverWebSocketConnection == ConnectionManager.PresenterConnection, (int)bitmap.Size.Width, (int)bitmap.Size.Height);
-
-            //    if (serverWebSocketConnection != ConnectionManager.PresenterConnection)
-            //    {
-                    
-                    
-            //        //Отсылаем последний вариант картинки
-            //        var data = DifferenceLib.DiffContainer.Split(
-            //            new KeyValuePair<Rectangle, Bitmap>(
-            //                new Rectangle(0, 0, (int) bitmap.Size.Width, (int) bitmap.Size.Height), bitmap), 40000);
-
-            //        foreach (var d in data)
-            //        {
-            //            serverWebSocketConnection.SendDiff(new DiffItem(d));
-            //        }
-            //    }
-            //}
-
         }
 
         private static void ConnectionManagerOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> connectionEventArgs)
         {
             queue.Enqueue(connectionEventArgs.Value);
-            
-            //lock (syncObj)
-            //{
-            //    graphics.DrawImage(connectionEventArgs.Value.DiffItem.Bitmap, connectionEventArgs.Value.DiffItem.Rectangle);
+        }
+    }
 
-            //    ConnectionManager.BroadcastSendDiff(connectionEventArgs.Value.DiffItem);
-            //}
+    public class Conference
+    {
+        public string Id { get; set; }
+        public List<ServerWebSocketConnection> Connections = new List<ServerWebSocketConnection>();
+        public ServerWebSocketConnection PresenterConnection = null;
+
+        public Bitmap Bitmap;
+        public Graphics Graphics;
+
+        public static string GenerateId()
+        {
+            return (new Random()).Next(111111, 999999).ToString();
+        }
+
+        public static Conference Start(string id, ServerWebSocketConnection presenterConnection, int presenterWidth, int presenterHeight)
+        {
+            Conference conference = new Conference();
+            conference.Id = id;
+            conference.PresenterConnection = presenterConnection;
+            conference.AddConnection(presenterConnection);
+
+            conference.Bitmap = new Bitmap(presenterWidth, presenterHeight);
+            conference.Graphics = Graphics.FromImage(conference.Bitmap);
+
+            return conference;
+        }
+
+        public void AddConnection(ServerWebSocketConnection connection)
+        {
+            if (!Connections.Contains(connection))
+                Connections.Add(connection);
+        }
+
+        public void RemoveConnection(ServerWebSocketConnection connection)
+        {
+            Connections.Remove(connection);
+
+            if (PresenterConnection == connection)
+                PresenterConnection = null;
+        }
+
+        public List<ServerWebSocketConnection> GetConnectionsCopy()
+        {
+            List<ServerWebSocketConnection> result = new List<ServerWebSocketConnection>();
+
+            result = Connections.ToList();
+
+            return result;
         }
     }
 }

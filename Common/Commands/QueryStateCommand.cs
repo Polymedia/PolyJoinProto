@@ -8,7 +8,7 @@ namespace Polymedia.PolyJoin.Common
     [Serializable]
     public class QueryStateCommand : Command
     {
-        public QueryStateCommand(int width, int height)
+        public QueryStateCommand(string conferenceId, int width, int height):base(conferenceId)
         {
             CommandName = CommandName.GetState;
 

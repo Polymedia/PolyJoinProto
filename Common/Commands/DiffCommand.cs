@@ -10,7 +10,7 @@ namespace Polymedia.PolyJoin.Common
     [Serializable]
     public class DiffCommand: Command
     {
-        public DiffCommand()
+        public DiffCommand(string conferenceId) : base(conferenceId)
         {
             CommandName = CommandName.Diff;
         }

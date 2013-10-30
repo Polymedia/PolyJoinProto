@@ -12,9 +12,6 @@ namespace Polymedia.PolyJoin.Server
     {
         public static Dictionary<Connection, ServerWebSocketConnection> Connections = new Dictionary<Connection, ServerWebSocketConnection>();
 
-        private static Connection _presenterConnection = null;
-        public static ServerWebSocketConnection PresenterConnection = null;
-
         public static event EventHandler<SimpleEventArgs<QueryStateCommand>> GetStateCommandReceived = delegate { };
         public static event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
 
@@ -22,15 +19,7 @@ namespace Polymedia.PolyJoin.Server
         {
             if (Connections.ContainsKey(connection)) return;
             
-            if (_presenterConnection == null)
-            {
-                _presenterConnection = connection;
-            }
-
             ServerWebSocketConnection serverWebSocketConnection = new ServerWebSocketConnection(connection);
-
-            if (_presenterConnection == connection)
-                PresenterConnection = serverWebSocketConnection;
 
             lock (Connections)
                 Connections.Add(connection, serverWebSocketConnection);
@@ -42,29 +31,23 @@ namespace Polymedia.PolyJoin.Server
 
         public static void RemoveConnection(Connection connection)
         {
-            if (_presenterConnection == connection)
-            {
-                PresenterConnection = null;
-                _presenterConnection = null;
-            }
-
             lock (Connections)    
                 Connections.Remove(connection);
         }
 
-        public static void BroadcastSendDiff(DiffItem diffItem)
-        {
-            var connections = new Dictionary<Connection, ServerWebSocketConnection>().ToList();
+        //public static void BroadcastSendDiff(DiffItem diffItem)
+        //{
+        //    var connections = new Dictionary<Connection, ServerWebSocketConnection>().ToList();
 
-            lock (Connections)
-                connections = Connections.ToList();
+        //    lock (Connections)
+        //        connections = Connections.ToList();
 
-            foreach (var connection in connections)
-            {
-                if (connection.Key != _presenterConnection)
-                    connection.Value.SendDiff(diffItem);
-            }
-        }
+        //    foreach (var connection in connections)
+        //    {
+        //        if (connection.Key != _presenterConnection)
+        //            connection.Value.SendDiff(diffItem);
+        //    }
+        //}
 
         private static void ServerWebSocketConnectionOnGetStateCommandReceived(object sender, SimpleEventArgs<QueryStateCommand> connectionEventArgs)
         {

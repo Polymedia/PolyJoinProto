@@ -11,13 +11,20 @@ namespace Polymedia.PolyJoin.Common
     {
         GetState,
         State,
-        Diff
+        Diff,
+        Disconnect
     }
 
     [Serializable]
-    public class Command
+    public abstract class Command
     {
         public CommandName CommandName { get; set; }
+        public string ConferenceId { get; set; }
+
+        public Command(string conferenceId)
+        {
+            ConferenceId = conferenceId;
+        }
 
         [NonSerialized] public ConnectionWrapper SenderConnection;
     }

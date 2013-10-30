@@ -9,7 +9,7 @@ using Polymedia.PolyJoin.Common;
 
 namespace Polymedia.PolyJoin.Server
 {
-    class ServerWebSocketConnection: ConnectionWrapper
+    public class ServerWebSocketConnection: ConnectionWrapper
     {
         public event EventHandler<SimpleEventArgs<QueryStateCommand>> GetStateCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { }; 
@@ -18,19 +18,18 @@ namespace Polymedia.PolyJoin.Server
         {
         }
 
-        public void SendState(int conferenceId, bool isPresenter, int presenterWidth, int presenterHeight)
+        public void SendState(string conferenceId, bool isPresenter, int presenterWidth, int presenterHeight)
         {
-            StateCommand command = new StateCommand();
-            command.ConferenceId = conferenceId;
+            StateCommand command = new StateCommand(conferenceId);
             command.IsPresenter = isPresenter;
             command.PresenterWidth = presenterWidth;
             command.PresenterHeight = presenterHeight;
             SendCommand(command);
         }
 
-        public void SendDiff(DiffItem diffItem)
+        public void SendDiff(string conferenceId, DiffItem diffItem)
         {
-            DiffCommand command = new DiffCommand();
+            DiffCommand command = new DiffCommand(conferenceId);
             command.DiffItem = diffItem;
             SendCommand(command);
         }

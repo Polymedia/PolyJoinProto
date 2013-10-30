@@ -11,109 +11,53 @@ namespace Polymedia.PolyJoin.Client
 {
     class Program
     {
-        private static volatile Boolean _runDiffThread = true;
-        private static Thread _diffThread = null;
-        private static DiffDetector _diffDetector;
-        private static float compr = 1;
-        private static int timeout = 330;
-
-        private static bool IsPresenter = false;
+        private static ConnectForm _connectForm;
+        private static MainForm _mainForm;
+        private static ConnectionManager _connectionManager;
 
         [STAThread]
         static void Main(string[] args)
         {
-            compr = float.Parse(ConfigurationSettings.AppSettings["compr"]);
-            timeout = int.Parse(ConfigurationSettings.AppSettings["timeout"]);
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var mf = new MainForm();
-            
-            ConnectionManager connectionManager = new ConnectionManager();
-
-            ClientWebSocketConnection clientWebSocketConnection = new ClientWebSocketConnection(connectionManager.Connect());
-
-            clientWebSocketConnection.ConnectionStateChanged += (sender, eventArgs) =>
+            _connectionManager = new ConnectionManager();
+            _connectionManager.ServerIp = "localhost";
+            _connectForm = new ConnectForm();
+            _connectForm.ServerIp = _connectionManager.ServerIp;
+            _mainForm = new MainForm
                 {
-                    if (eventArgs.Value)
-                        clientWebSocketConnection.QueryState((int)(Screen.PrimaryScreen.Bounds.Width / compr), (int)(Screen.PrimaryScreen.Bounds.Height / compr));
-                    else
-                        _runDiffThread = false;
+                    ScreenshotScale = float.Parse(ConfigurationSettings.AppSettings["scale"]),
+                    ScreenshotTimeout = int.Parse(ConfigurationSettings.AppSettings["timeout"])
                 };
 
-            #region
-
-            clientWebSocketConnection.StateCommandReceived += (sender, eventArgs) =>
+            _connectForm.VisibleChanged += (sender, eventArgs) =>
                 {
-                    Console.WriteLine(eventArgs.Value.ConferenceId + " " + eventArgs.Value.IsPresenter);
-                    IsPresenter = eventArgs.Value.IsPresenter;
-
-                    mf.SetIsPresenter(IsPresenter, eventArgs.Value.PresenterWidth, eventArgs.Value.PresenterHeight);
-
-                    if (IsPresenter)
+                    if (!_connectForm.Visible)
                     {
-                        _runDiffThread = false;
+                        _connectionManager.ServerIp = _connectForm.ServerIp;
+                        
+                        var clientWebSocketConnection = new ClientWebSocketConnection(_connectionManager.GetConnection());
+                        _mainForm.ClientWebSocketConnection = clientWebSocketConnection;
+                        _mainForm.ConferenceId = _connectForm.ConferenceId;
 
-                        if (_diffThread != null)
-                            while (_diffThread.IsAlive)
-                                Thread.Sleep(50);
-
-                        _runDiffThread = true;
-
-                        _diffThread = new Thread(() =>
-                            {
-                                _diffDetector = new DiffDetector();
-                                while (_runDiffThread)
-                                {
-                                    try
-                                    {
-                                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
-                                                                       Screen.PrimaryScreen.Bounds.Height);
-
-                                        using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
-                                        {
-                                            screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
-                                                                              new Size(
-                                                                                  Screen.PrimaryScreen.Bounds.Width,
-                                                                                  Screen.PrimaryScreen.Bounds.Height));
-
-                                            if (compr != 1)
-                                                screenShot = new Bitmap(screenShot,
-                                                                        (int) (Screen.PrimaryScreen.Bounds.Width/compr),
-                                                                        (int) (Screen.PrimaryScreen.Bounds.Height/compr));
-                                        }
-                                        DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
-
-                                        diffContainer.Data = DiffContainer.Split(diffContainer.Data, 40000);
-
-                                        foreach (var s in diffContainer.Data)
-                                            clientWebSocketConnection.SendDiff(new DiffItem(s));
-                                    }
-                                    catch
-                                    {
-                                        Console.WriteLine("EXCEPTION!");
-                                    }
-                                    Thread.Sleep(timeout);
-                                }
-                            });
-                        _diffThread.Start();
+                        _connectionManager.Connect();
+                        
+                        _mainForm.Show();
                     }
                     else
-                        mf.StartProcessingCommands();
+                    {
+                        _connectionManager.Disconnect();
+                    }
                 };
 
-            #endregion
+            _mainForm.VisibleChanged += (sender, eventArgs) =>
+            {
+                if (!_mainForm.Visible)
+                    _connectForm.Show();
+            };
 
-            clientWebSocketConnection.DiffCommandReceived += (sender, eventArgs) =>
-                {
-                    if(!IsPresenter)
-                        mf.AddDiffCommand(eventArgs.Value);
-                };
-
-            Application.Run(mf);
-
-            connectionManager.Disconnect();
+            Application.Run(_connectForm);
         }
     }
 }
