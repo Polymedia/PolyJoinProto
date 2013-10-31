@@ -154,7 +154,7 @@ namespace Polymedia.PolyJoin.Server
                     if (conference == null)
                         return;
 
-                    foreach (var connection in conference.GetConnectionsCopy())
+                    foreach (var connection in conference.Connections)
                     {
                         connection.PaintAddFigureCommand(conference.Id, addFigureCommand.Points, addFigureCommand.Color);
                     }

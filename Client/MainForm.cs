@@ -101,11 +101,10 @@ namespace Polymedia.PolyJoin.Client
                         _id = string.Empty;
 
                         conferenceIdValueLabel.Text = string.Empty;
-                    _paintControl.BackgroundImage = null;
+                        _paintControl.BackgroundImage = null;
                         roleValueLabel.Text = string.Empty;
 
-                        pictureBox.Image = null;
-
+                        
                         dataGridView.DataSource = null;
                     }
                 };
@@ -120,6 +119,11 @@ namespace Polymedia.PolyJoin.Client
             };
         }
 
+        private void ClientWebSocketConnectionOnParticipantsCommandReceived(object sender, SimpleEventArgs<ParticipantsCommand> simpleEventArgs)
+        {
+            _queue.Enqueue(simpleEventArgs.Value);
+        }
+
         private void InitPaintControl(int width, int height)
         {
             _paintControl = new PainterControl(_presenterWidth, _presenterHeight);
@@ -130,8 +134,6 @@ namespace Polymedia.PolyJoin.Client
                 ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Points, e.Value.Color);
             };
         }
-
-
 
         private void ClientWebSocketConnectionOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> simpleEventArgs)
         {
