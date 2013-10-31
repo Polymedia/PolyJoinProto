@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace Painter
 {
-    class Figure
+    public class Figure
     {
         public List<Point> Points{get; set;}
         public Color Color { get; set; }

@@ -12,7 +12,9 @@ namespace Polymedia.PolyJoin.Common
         GetState,
         State,
         Diff,
-        Disconnect
+        Disconnect,
+        PaintAddFigure,
+        PaintDeleteFigure
     }
 
     [Serializable]

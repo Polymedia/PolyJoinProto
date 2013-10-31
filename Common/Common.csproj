@@ -34,6 +34,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -43,6 +44,8 @@
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\DiffCommand.cs" />
     <Compile Include="Commands\DisconnectCommand.cs" />
+    <Compile Include="Commands\PaintAddFigureCommand.cs" />
+    <Compile Include="Commands\PaintDeleteFigureCommand.cs" />
     <Compile Include="Commands\QueryStateCommand.cs" />
     <Compile Include="ConnectionWrapper.cs" />
     <Compile Include="IWebSocketConnection.cs" />

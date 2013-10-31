@@ -29,26 +29,6 @@ namespace Painter
             _image = new Bitmap(_imageWidth, _imageHeight);
         }
 
-        public int Width
-        {
-            get { return _imageWidth; }
-            private set 
-            { 
-                _imageWidth = value;
-                Init(value, Height);
-            }
-        }
-
-        public int Height
-        {
-            get { return _imageHeight; }
-            private set 
-            { 
-                _imageHeight = value;
-                Init(Width, value);
-            }
-        }
-
         public Bitmap Image
         {
             get { return _image; }
@@ -95,25 +75,31 @@ namespace Painter
             }
         }
 
-        public void RemoveFigure(double x, double y)
+        public int RemoveFigure(double x, double y)
         {
-            int figureId = -1;
             foreach (var f in _figuresDictionary)
             {
                 for (int i = 0; i < f.Value.Points.Count - 1; i++)
                 {
-                    if (PointCloseToLineSegment(x, y, f.Value.Points[i].X, f.Value.Points[i].Y, f.Value.Points[i + 1].X, f.Value.Points[i + 1].Y))
+                    if (PointCloseToSegment(x, y, f.Value.Points[i].X, f.Value.Points[i].Y, f.Value.Points[i + 1].X, f.Value.Points[i + 1].Y))
                     {
-                        _figuresDictionary.Remove(f.Key);
+                        var id = f.Key;
+                        _figuresDictionary.Remove(id);
                         _image = new Bitmap(_imageWidth, _imageHeight);
                         RenderFigures();
-                        return;
+                        return id;
                     }
                 }
             }
+            return -1;
         }
 
-        private bool PointCloseToLineSegment(double pointX, double pointY, double x1, double y1, double x2, double y2)
+        public Figure GetFigureById(int id)
+        {
+            return _figuresDictionary[id];
+        }
+
+        private bool PointCloseToSegment(double pointX, double pointY, double x1, double y1, double x2, double y2)
         {
             var t = GetLineThickness()*2;
             if ((pointX > x1 - t && pointX < x2 + t || pointX > x2 - t && pointX < x1 + t) && (pointY > y1 - t && pointY < y2 + t || pointY > y2 - t && pointY < y1 + t))
@@ -132,7 +118,7 @@ namespace Painter
 
         public double GetLineThickness()
         {
-            return Width / 100;
+            return _imageWidth / 100;
         }
 
         private void RenderFigure(Figure f)

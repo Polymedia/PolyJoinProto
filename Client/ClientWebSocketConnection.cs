@@ -5,6 +5,7 @@ using System.Text;
 using Common;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
+using System.Drawing;
 
 namespace Polymedia.PolyJoin.Client
 {
@@ -12,7 +13,8 @@ namespace Polymedia.PolyJoin.Client
     {
         public event EventHandler<SimpleEventArgs<StateCommand>> StateCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
-        public event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged = delegate { }; 
+        public event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged = delegate { };
+        public event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
         
         public ClientWebSocketConnection(IWebSocketConnection webSocketConnection)
             : base(webSocketConnection)
@@ -33,6 +35,12 @@ namespace Polymedia.PolyJoin.Client
             SendCommand(command);
         }
 
+        public void PaintAddFigureCommand(string conferenceId, List<Point> points, Color color)
+        {
+            Command command = new PaintAddFigureCommand(conferenceId, points, color);
+            SendCommand(command);
+        }
+
         protected override void OnReceivedCommand(Command command)
         {
             //TODO generate events on command received
@@ -48,6 +56,10 @@ namespace Polymedia.PolyJoin.Client
                 case CommandName.Diff:
                     Console.WriteLine("Command Diff");
                     DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand>() { Value = (DiffCommand)command });
+                    break;
+                case CommandName.PaintAddFigure:
+                    Console.WriteLine("Command PaintAddFigure");
+                    PaintAddFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintAddFigureCommand>() { Value = (PaintAddFigureCommand)command });
                     break;
                 default:
                     Console.WriteLine("Unknown command");

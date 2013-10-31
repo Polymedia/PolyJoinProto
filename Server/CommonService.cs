@@ -22,6 +22,7 @@ namespace Polymedia.PolyJoin.Server
         {
             ConnectionManager.GetStateCommandReceived += ConnectionManagerOnGetStateCommandReceived;
             ConnectionManager.DiffCommandReceived += ConnectionManagerOnDiffCommandReceived;
+            ConnectionManager.PaintAddFigureCommandRecieved+=ConnectionManagerPaintAddFigureCommandRecieved;
 
             Thread thread = new Thread(() => { 
                 while(true)
@@ -117,7 +118,8 @@ namespace Polymedia.PolyJoin.Server
                             continue;
                         connection.SendDiff(conference.Id, diffCommand.DiffItem);
                     }
-                }else if (command is DisconnectCommand)
+                }
+                else if (command is DisconnectCommand)
                 {
                     var disconnectCommand = command as DisconnectCommand;
 
@@ -137,6 +139,20 @@ namespace Polymedia.PolyJoin.Server
 
                     //TODO send connections list
                 }
+                else if (command is PaintAddFigureCommand)
+                {
+                    var addFigureCommand = command as PaintAddFigureCommand;
+
+                    Conference conference = conferences[addFigureCommand.ConferenceId];
+
+                    if (conference == null)
+                        return;
+
+                    foreach (var connection in conference.GetConnectionsCopy())
+                    {
+                        connection.PaintAddFigureCommand(conference.Id, addFigureCommand.Points, addFigureCommand.Color);
+                    }
+                }
             }
         }
 
@@ -148,6 +164,11 @@ namespace Polymedia.PolyJoin.Server
         private static void ConnectionManagerOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> connectionEventArgs)
         {
             queue.Enqueue(connectionEventArgs.Value);
+        }
+
+        private static void ConnectionManagerPaintAddFigureCommandRecieved(object sender, SimpleEventArgs<PaintAddFigureCommand> e)
+        {
+            queue.Enqueue(e.Value);
         }
     }
 

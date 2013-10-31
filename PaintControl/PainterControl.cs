@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using System.Threading;
+using Polymedia.PolyJoin.Common;
 
 namespace Painter
 {
@@ -29,10 +30,11 @@ namespace Painter
             pictureBox.Image = _painter.Image;
         }
 
-        #region IPaintControl
-        public void AddFigure(byte[] data)
+        
+        public void AddFigure(List<Point> points, Color color)
         {
-            throw new NotImplementedException();
+            _painter.AddFigure(points, color);
+            FillPictureBox();
         }
 
         public void RemoveFigure(int id)
@@ -40,7 +42,7 @@ namespace Painter
             throw new NotImplementedException();
         }
 
-        public event EventHandler FigureAdded;
+        public event EventHandler<SimpleEventArgs<Figure>> FigureAdded;
 
         public event EventHandler FigureRemoved;
 
@@ -50,8 +52,7 @@ namespace Painter
             {
                 pictureBox.BackgroundImage = value;
             }
-        } 
-        #endregion
+        }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -65,6 +66,10 @@ namespace Painter
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
             _mouseButtonDown = false;
+
+            if (FigureAdded != null)
+                FigureAdded.Invoke(this, new SimpleEventArgs<Figure>(_painter.GetFigureById(_currentFigureId)));
+
             _currentFigureId = -1;
             FillPictureBox();
         }

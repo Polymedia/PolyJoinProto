@@ -9,12 +9,11 @@ namespace Painter
 {
     interface IPaintContainer
     {
-        int Width { get; }
-        int Height {get; }
         Bitmap Image { get; }
         int AddFigure(List<Point> figurePoints, Color color);
         void AddPointToFogure(Point p, int figureId);
-        void RemoveFigure(double x, double y);
+        int RemoveFigure(double x, double y);
+        Figure GetFigureById(int id);
         double GetLineThickness();
     }
 }

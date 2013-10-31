@@ -35,6 +35,7 @@ namespace Polymedia.PolyJoin.Client
                 _clientWebSocketConnection.ConnectionStateChanged += ClientWebSocketConnectionOnConnectionStateChanged;
                 _clientWebSocketConnection.StateCommandReceived += ClientWebSocketConnectionOnStateCommandReceived;
                 _clientWebSocketConnection.DiffCommandReceived += ClientWebSocketConnectionOnDiffCommandReceived;
+                _clientWebSocketConnection.PaintAddFigureCommandRecieved += ClientWebSocketConnectionPaintAddFigureCommandRecieved;
             }
             private get { return _clientWebSocketConnection; }
         }
@@ -79,10 +80,17 @@ namespace Polymedia.PolyJoin.Client
                     _clientWebSocketConnection.ConnectionStateChanged -=
                         ClientWebSocketConnectionOnConnectionStateChanged;
             };
+        }
 
-            _paintControl = new PainterControl(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+        private void InitPaintControl(int width, int height)
+        {
+            _paintControl = new PainterControl(_presenterWidth, _presenterHeight);
             tableLayoutPanel.Controls.Add(_paintControl, 1, 1);
             _paintControl.Dock = DockStyle.Fill;
+            _paintControl.FigureAdded += (s, e) =>
+            {
+                ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Points, e.Value.Color);
+            };
         }
 
         private void ClientWebSocketConnectionOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> simpleEventArgs)
@@ -117,6 +125,8 @@ namespace Polymedia.PolyJoin.Client
                         _diffFrame = new Bitmap(_presenterWidth, _presenterHeight);
 
                         roleValueLabel.Text = _isPresenter ? "Presenter" : "Viewer";
+
+                        InitPaintControl(_presenterWidth, _presenterHeight);
                     }
                 }));
         }
@@ -138,6 +148,11 @@ namespace Polymedia.PolyJoin.Client
                         _runProcessCommandsThread = false;
                     }
                 }));
+        }
+
+        private void ClientWebSocketConnectionPaintAddFigureCommandRecieved(object sender, SimpleEventArgs<PaintAddFigureCommand> e)
+        {
+            _paintControl.AddFigure(e.Value.Points, e.Value.Color);
         }
 
         public void StartProcessCommandsThread()
