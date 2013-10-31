@@ -13,7 +13,7 @@ namespace Polymedia.PolyJoin.Client
     {
         private static ConnectForm _connectForm;
         private static MainForm _mainForm;
-	private static ConnectionManager _connectionManager;
+	    private static ConnectionManager _connectionManager;
 
         [STAThread]
         static void Main(string[] args)

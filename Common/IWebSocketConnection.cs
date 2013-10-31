@@ -1,26 +1,14 @@
 ﻿using System;
 
-namespace Common
+namespace Polymedia.PolyJoin.Common
 {
     public interface IWebSocketConnection
     {
         bool SendMessage(string message);
         bool SendData(byte[] data);
 
-        event EventHandler<WebSocketEventArgs<string>> MessageRecived;
-        event EventHandler <WebSocketEventArgs<byte[]>> DataRecived;
-        event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged; 
-    }
-
-    public class WebSocketEventArgs<T>: EventArgs
-    {
-        public WebSocketEventArgs(){}
-        
-        public WebSocketEventArgs(T value)
-        {
-            Value = value;
-        }
-        
-        public T Value { get; set; }
+        event EventHandler<SimpleEventArgs<string>> MessageRecived;
+        event EventHandler<SimpleEventArgs<byte[]>> DataRecived;
+        event EventHandler<SimpleEventArgs<bool>> ConnectionStateChanged; 
     }
 }

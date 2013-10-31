@@ -33,13 +33,19 @@
             this.connectionStateValueLabel = new System.Windows.Forms.Label();
             this.connectionStateLabel = new System.Windows.Forms.Label();
             this.leftPanel = new System.Windows.Forms.Panel();
+            this.dataGridView = new System.Windows.Forms.DataGridView();
             this.roleValueLabel = new System.Windows.Forms.Label();
             this.roleLabel = new System.Windows.Forms.Label();
             this.conferenceIdValueLabel = new System.Windows.Forms.Label();
             this.conferenceIdlabel = new System.Windows.Forms.Label();
+            this.IdColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.IsPresenterColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.ColorColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tableLayoutPanel.SuspendLayout();
             this.topPanel.SuspendLayout();
             this.leftPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel
@@ -91,6 +97,7 @@
             // 
             // leftPanel
             // 
+            this.leftPanel.Controls.Add(this.dataGridView);
             this.leftPanel.Controls.Add(this.roleValueLabel);
             this.leftPanel.Controls.Add(this.roleLabel);
             this.leftPanel.Controls.Add(this.conferenceIdValueLabel);
@@ -100,6 +107,27 @@
             this.leftPanel.Name = "leftPanel";
             this.leftPanel.Size = new System.Drawing.Size(294, 460);
             this.leftPanel.TabIndex = 2;
+            // 
+            // dataGridView
+            // 
+            this.dataGridView.AllowUserToAddRows = false;
+            this.dataGridView.AllowUserToDeleteRows = false;
+            this.dataGridView.AllowUserToResizeRows = false;
+            this.dataGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridView.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.IdColumn,
+            this.NameColumn,
+            this.IsPresenterColumn,
+            this.ColorColumn});
+            this.dataGridView.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.dataGridView.Location = new System.Drawing.Point(0, 52);
+            this.dataGridView.Name = "dataGridView";
+            this.dataGridView.ReadOnly = true;
+            this.dataGridView.RowHeadersVisible = false;
+            this.dataGridView.Size = new System.Drawing.Size(294, 408);
+            this.dataGridView.TabIndex = 8;
             // 
             // roleValueLabel
             // 
@@ -117,6 +145,38 @@
             this.roleLabel.Size = new System.Drawing.Size(32, 13);
             this.roleLabel.TabIndex = 6;
             this.roleLabel.Text = "Role:";
+            // 
+            // IdColumn
+            // 
+            this.IdColumn.DataPropertyName = "Id";
+            this.IdColumn.HeaderText = "Id";
+            this.IdColumn.Name = "IdColumn";
+            this.IdColumn.ReadOnly = true;
+            this.IdColumn.Visible = false;
+            // 
+            // NameColumn
+            // 
+            this.NameColumn.DataPropertyName = "Name";
+            this.NameColumn.HeaderText = "Name";
+            this.NameColumn.Name = "NameColumn";
+            this.NameColumn.ReadOnly = true;
+            // 
+            // IsPresenterColumn
+            // 
+            this.IsPresenterColumn.DataPropertyName = "IsPresenter";
+            this.IsPresenterColumn.HeaderText = "Is presenter";
+            this.IsPresenterColumn.Name = "IsPresenterColumn";
+            this.IsPresenterColumn.ReadOnly = true;
+            this.IsPresenterColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.IsPresenterColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // ColorColumn
+            // 
+            this.ColorColumn.DataPropertyName = "BrushArgb";
+            this.ColorColumn.HeaderText = "Color";
+            this.ColorColumn.Name = "ColorColumn";
+            this.ColorColumn.ReadOnly = true;
+            this.ColorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
             // conferenceIdValueLabel
             // 
@@ -149,6 +209,7 @@
             this.topPanel.PerformLayout();
             this.leftPanel.ResumeLayout(false);
             this.leftPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -164,6 +225,11 @@
         private System.Windows.Forms.Label conferenceIdlabel;
         private System.Windows.Forms.Label roleValueLabel;
         private System.Windows.Forms.Label roleLabel;
+        private System.Windows.Forms.DataGridView dataGridView;
+        private System.Windows.Forms.DataGridViewTextBoxColumn IdColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn NameColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn IsPresenterColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColorColumn;
 
     }
 }

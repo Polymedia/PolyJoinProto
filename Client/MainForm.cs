@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using Common;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 using Painter;
@@ -32,9 +31,10 @@ namespace Polymedia.PolyJoin.Client
             set
             {
                 _clientWebSocketConnection = value;
-                _clientWebSocketConnection.ConnectionStateChanged += ClientWebSocketConnectionOnConnectionStateChanged;
+                _clientWebSocketConnection.ConnectionStateChangedEvent += ClientWebSocketConnectionOnConnectionStateChanged;
                 _clientWebSocketConnection.StateCommandReceived += ClientWebSocketConnectionOnStateCommandReceived;
                 _clientWebSocketConnection.DiffCommandReceived += ClientWebSocketConnectionOnDiffCommandReceived;
+                _clientWebSocketConnection.ParticipantsCommandReceived += ClientWebSocketConnectionOnParticipantsCommandReceived;
                 _clientWebSocketConnection.PaintAddFigureCommandRecieved += ClientWebSocketConnectionPaintAddFigureCommandRecieved;
             }
             private get { return _clientWebSocketConnection; }
@@ -48,6 +48,7 @@ namespace Polymedia.PolyJoin.Client
         private bool _isPresenter;
         private int _presenterWidth;
         private int _presenterHeight;
+        private string _id;
 
         private Bitmap _diffFrame = null;
 
@@ -57,19 +58,56 @@ namespace Polymedia.PolyJoin.Client
         {
             InitializeComponent();
 
+            dataGridView.AutoGenerateColumns = false;
+            dataGridView.SelectionChanged += (sender, ea) => dataGridView.ClearSelection();
+            dataGridView.CellPainting += (sender, args) =>
+                {
+                    if (dataGridView.Columns["ColorColumn"] != null && dataGridView.Columns["ColorColumn"].Index == args.ColumnIndex && args.RowIndex >= 0)
+                    {
+                        using (
+                            Brush gridBrush = new SolidBrush(dataGridView.GridColor),
+                                  backColorBrush = new SolidBrush(args.CellStyle.BackColor))
+                        {
+                            using (Pen gridLinePen = new Pen(gridBrush))
+                            {
+                                args.Graphics.FillRectangle(backColorBrush, args.CellBounds);
+
+                                args.Graphics.DrawLine(gridLinePen, args.CellBounds.Left,
+                                                       args.CellBounds.Bottom - 1, args.CellBounds.Right - 1,
+                                                       args.CellBounds.Bottom - 1);
+                                args.Graphics.DrawLine(gridLinePen, args.CellBounds.Right - 1,
+                                                       args.CellBounds.Top, args.CellBounds.Right - 1,
+                                                       args.CellBounds.Bottom);
+
+                                args.Graphics.FillEllipse(new SolidBrush(Color.FromArgb((int)args.Value)), args.CellBounds.Location.X + args.CellBounds.Width / 2 - 5, args.CellBounds.Location.Y + args.CellBounds.Height / 2 - 5, 10, 10);
+
+                                args.Handled = true;
+                            }
+                        }
+                    }
+                };
+
             conferenceIdValueLabel.DoubleClick += (sender, args) => { Clipboard.SetText(conferenceIdValueLabel.Text); };
             
-            FormClosed += (sender, ea) =>
+            VisibleChanged += (sender, ea) =>
                 {
-                    _runProcessCommandsThread = false;
-                    _runDiffDetectThread = false;
-                    _isPresenter = false;
-                    _presenterWidth = 0;
-                    _presenterHeight = 0;
+                    if (!Visible)
+                    {
+                        _runProcessCommandsThread = false;
+                        _runDiffDetectThread = false;
+                        _isPresenter = false;
+                        _presenterWidth = 0;
+                        _presenterHeight = 0;
+                        _id = string.Empty;
 
-                    conferenceIdValueLabel.Text = string.Empty;
+                        conferenceIdValueLabel.Text = string.Empty;
                     _paintControl.BackgroundImage = null;
-                    roleValueLabel.Text = string.Empty;
+                        roleValueLabel.Text = string.Empty;
+
+                        pictureBox.Image = null;
+
+                        dataGridView.DataSource = null;
+                    }
                 };
 
             FormClosing += (sender, ea) =>
@@ -77,7 +115,7 @@ namespace Polymedia.PolyJoin.Client
                 Hide();
                 ea.Cancel = true;
                 if (_clientWebSocketConnection != null)
-                    _clientWebSocketConnection.ConnectionStateChanged -=
+                    _clientWebSocketConnection.ConnectionStateChangedEvent -=
                         ClientWebSocketConnectionOnConnectionStateChanged;
             };
         }
@@ -92,6 +130,8 @@ namespace Polymedia.PolyJoin.Client
                 ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Points, e.Value.Color);
             };
         }
+
+
 
         private void ClientWebSocketConnectionOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> simpleEventArgs)
         {
@@ -114,6 +154,7 @@ namespace Polymedia.PolyJoin.Client
                         _isPresenter = stateCommand.IsPresenter;
                         _presenterWidth = stateCommand.PresenterWidth;
                         _presenterHeight = stateCommand.PresenterHeight;
+                        _id = stateCommand.ParticipantId;
 
                         if (_isPresenter)
                             StartDiffDetectThread();
@@ -131,7 +172,7 @@ namespace Polymedia.PolyJoin.Client
                 }));
         }
 
-        private void ClientWebSocketConnectionOnConnectionStateChanged(object sender, WebSocketEventArgs<bool> webSocketEventArgs)
+        private void ClientWebSocketConnectionOnConnectionStateChanged(object sender, SimpleEventArgs<bool> webSocketEventArgs)
         {
             Invoke(new Action(() =>
                 {
@@ -176,19 +217,18 @@ namespace Polymedia.PolyJoin.Client
 
                         if (_queue.Count != 0)
                         {
-                            DiffCommand diffCommand = (DiffCommand)_queue.Dequeue();
-                                //_diffFrame = new Bitmap(_presenterWidth, _presenterHeight);
+                            Command command = (Command)_queue.Dequeue();
 
-                            using (Graphics diffFrameGraphics = Graphics.FromImage(_diffFrame))
+                            if (command is DiffCommand)
                             {
-
-                                diffFrameGraphics.DrawImage(
-                                    DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
-                                    diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
-                                    diffCommand.DiffItem.Width, diffCommand.DiffItem.Height);
+                                DiffCommand diffCommand = command  as DiffCommand;
+                                ProcessDiffCommand(diffCommand);
+                                draw = true;
+                            }else if (command is ParticipantsCommand)
+                            {
+                                ParticipantsCommand participantsCommand = command as ParticipantsCommand;
+                                ProcessParticipantsCommand(participantsCommand);
                             }
-
-                            draw = true;
                         }
                         else
                         {
@@ -219,6 +259,30 @@ namespace Polymedia.PolyJoin.Client
                 }
             });
             _processCommandsThread.Start();
+        }
+
+        private void ProcessDiffCommand(DiffCommand diffCommand)
+        {
+            using (Graphics diffFrameGraphics = Graphics.FromImage(_diffFrame))
+            {
+
+                diffFrameGraphics.DrawImage(
+                    DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
+                    diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
+                    diffCommand.DiffItem.Width, diffCommand.DiffItem.Height);
+            }
+        }
+
+        private void ProcessParticipantsCommand(ParticipantsCommand participantsCommand)
+        {
+            Invoke(new Action(() =>
+                {
+                    dataGridView.DataSource = participantsCommand.Participants;
+                    foreach (DataGridViewRow  row in dataGridView.Rows)
+                        if (row.Cells["IdColumn"].Value.Equals(_id))
+                            foreach (DataGridViewCell cell in row.Cells)
+                                cell.Style.BackColor = Color.Gainsboro;
+                }));
         }
 
         public void StartDiffDetectThread()

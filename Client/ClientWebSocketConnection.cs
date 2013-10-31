@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Common;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 using System.Drawing;
@@ -11,15 +10,14 @@ namespace Polymedia.PolyJoin.Client
 {
     public class ClientWebSocketConnection: ConnectionWrapper
     {
+        public event EventHandler<SimpleEventArgs<ParticipantsCommand>> ParticipantsCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<StateCommand>> StateCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
-        public event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged = delegate { };
         public event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
         
         public ClientWebSocketConnection(IWebSocketConnection webSocketConnection)
             : base(webSocketConnection)
         {
-            webSocketConnection.ConnectionStateChanged += (sender, args) => ConnectionStateChanged.Invoke(this, args);
         }
 
         public void QueryState(string conferenceId, int width, int height)
@@ -56,6 +54,10 @@ namespace Polymedia.PolyJoin.Client
                 case CommandName.Diff:
                     Console.WriteLine("Command Diff");
                     DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand>() { Value = (DiffCommand)command });
+                    break;
+                case CommandName.Participants:
+                    Console.WriteLine("Command Participants");
+                    ParticipantsCommandReceived.Invoke(this, new SimpleEventArgs<ParticipantsCommand>() { Value = (ParticipantsCommand)command });
                     break;
                 case CommandName.PaintAddFigure:
                     Console.WriteLine("Command PaintAddFigure");

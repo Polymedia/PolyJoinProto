@@ -44,6 +44,7 @@
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\DiffCommand.cs" />
     <Compile Include="Commands\DisconnectCommand.cs" />
+    <Compile Include="Commands\ParticipantsCommand.cs" />
     <Compile Include="Commands\PaintAddFigureCommand.cs" />
     <Compile Include="Commands\PaintDeleteFigureCommand.cs" />
     <Compile Include="Commands\QueryStateCommand.cs" />

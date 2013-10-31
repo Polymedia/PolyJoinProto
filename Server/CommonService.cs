@@ -57,32 +57,34 @@ namespace Polymedia.PolyJoin.Server
                         conference = Conference.Start(id, (ServerWebSocketConnection) queryStateCommand.SenderConnection,
                                                       queryStateCommand.Width, queryStateCommand.Height);
 
-                        queryStateCommand.SenderConnection.ConnectionStateChanged += (sender, args) =>
-                            {
-                                DisconnectCommand disconnectCommand = new DisconnectCommand();
-                                disconnectCommand.SenderConnection = queryStateCommand.SenderConnection;
-
-                                queue.Enqueue(disconnectCommand);
-                            };
-
                         conferences.Add(conference.Id, conference);
-                        connections.Add((ServerWebSocketConnection)queryStateCommand.SenderConnection, conference.Id);
                     }
                     else
                         conferences.TryGetValue(queryStateCommand.ConferenceId, out conference);
 
                     if (conference != null)
                     {
-                        conference.AddConnection((ServerWebSocketConnection)queryStateCommand.SenderConnection);
+                        queryStateCommand.SenderConnection.ConnectionStateChangedEvent += (sender, args) =>
+                        {
+                            if (!args.Value)
+                            {
+                                DisconnectCommand disconnectCommand = new DisconnectCommand();
+                                disconnectCommand.SenderConnection = queryStateCommand.SenderConnection;
+                                queue.Enqueue(disconnectCommand);
+                            }
+                        };
                         
-                        ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendState(conference.Id, command.SenderConnection == conference.PresenterConnection,
-                            (int)conference.Bitmap.Size.Width, (int)conference.Bitmap.Size.Height);
+                        connections.Add((ServerWebSocketConnection)queryStateCommand.SenderConnection, conference.Id);
+                        conference.AddConnection((ServerWebSocketConnection)queryStateCommand.SenderConnection);
 
-                        //TODO send connections list
+                        ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendState(conference.Id, ((ServerWebSocketConnection)queryStateCommand.SenderConnection).Id, 
+                            command.SenderConnection == conference.PresenterConnection, (int)conference.Bitmap.Size.Width, (int)conference.Bitmap.Size.Height);
+                        
+                        BroadcastParticipantsCommand(conference);
                     }
                     else
                     {
-                        ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendState(string.Empty, false, 0, 0);
+                        ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendState(string.Empty, string.Empty, false, 0, 0);
                         return;
                     }
                     
@@ -103,7 +105,8 @@ namespace Polymedia.PolyJoin.Server
                 {
                     var diffCommand = command as DiffCommand;
 
-                    Conference conference = conferences[diffCommand.ConferenceId];
+                    Conference conference = null;
+                    conferences.TryGetValue(diffCommand.ConferenceId, out conference);
 
                     if(conference == null)
                         return;
@@ -112,7 +115,7 @@ namespace Polymedia.PolyJoin.Server
                                                         diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
                                                         diffCommand.DiffItem.Width, diffCommand.DiffItem.Height);
 
-                    foreach (var connection in conference.GetConnectionsCopy())
+                    foreach (var connection in conference.Connections)
                     {
                         if (connection == conference.PresenterConnection)
                             continue;
@@ -133,11 +136,14 @@ namespace Polymedia.PolyJoin.Server
                     if (conference != null)
                     {
                         conference.RemoveConnection(((ServerWebSocketConnection) disconnectCommand.SenderConnection));
+
+                        BroadcastParticipantsCommand(conference);
+
                         if (conference.Connections.Count == 0 || conference.PresenterConnection == null)
                             conferences.Remove(conferenceId);
                     }
 
-                    //TODO send connections list
+                    
                 }
                 else if (command is PaintAddFigureCommand)
                 {
@@ -170,6 +176,24 @@ namespace Polymedia.PolyJoin.Server
         {
             queue.Enqueue(e.Value);
         }
+
+        private static void BroadcastParticipantsCommand(Conference conference)
+        {
+            List<Participant> participants = new List<Participant>();
+            foreach (var connection in conference.Connections)
+            {
+                participants.Add(new Participant()
+                {
+                    Id = connection.Id,
+                    Name = connection.Name,
+                    BrushArgb = connection.BrushArgb,
+                    IsPresenter = connection == conference.PresenterConnection
+                });
+            }
+
+            foreach (var connection in conference.Connections)
+                connection.SendParticipants(conference.Id, participants);
+        }
     }
 
     public class Conference
@@ -180,6 +204,10 @@ namespace Polymedia.PolyJoin.Server
 
         public Bitmap Bitmap;
         public Graphics Graphics;
+
+        private int _lastConnectionNum = 0;
+
+        public static Color[] Colors = new Color[]{Color.Red, Color.Orange, Color.Yellow, Color.Green, Color.LightBlue, Color.Blue, Color.Violet};
 
         public static string GenerateId()
         {
@@ -199,10 +227,22 @@ namespace Polymedia.PolyJoin.Server
             return conference;
         }
 
+        public int GenerateConnectionNumber()
+        {
+            return ++_lastConnectionNum;
+        }
+
         public void AddConnection(ServerWebSocketConnection connection)
         {
             if (!Connections.Contains(connection))
+            {
+                int num = GenerateConnectionNumber();
+                connection.BrushArgb = Conference.Colors[(num - 1) % Conference.Colors.Length].ToArgb();
+                connection.Name = connection == PresenterConnection
+                    ? "Presenter"
+                    : "Viewer " + num; 
                 Connections.Add(connection);
+            }
         }
 
         public void RemoveConnection(ServerWebSocketConnection connection)
@@ -211,15 +251,6 @@ namespace Polymedia.PolyJoin.Server
 
             if (PresenterConnection == connection)
                 PresenterConnection = null;
-        }
-
-        public List<ServerWebSocketConnection> GetConnectionsCopy()
-        {
-            List<ServerWebSocketConnection> result = new List<ServerWebSocketConnection>();
-
-            result = Connections.ToList();
-
-            return result;
         }
     }
 }
