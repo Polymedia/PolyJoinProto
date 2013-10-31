@@ -138,64 +138,62 @@ namespace DifferenceLib
                 result.Add(originalImage.Key, originalImage.Value);
                 return result;
             }
+
+            Bitmap firstBitmap;
+            Bitmap secondBitmap;
+
+            Rectangle r1;
+            Rectangle r2;
+
+            if (originalImage.Value.Width > originalImage.Value.Height)
+            {
+                //split vertically
+                firstBitmap = new Bitmap(originalImage.Value.Width/2, originalImage.Value.Height);
+                secondBitmap = new Bitmap(originalImage.Value.Width/2, originalImage.Value.Height);
+
+                Graphics g1 = Graphics.FromImage(firstBitmap);
+                g1.DrawImage(originalImage.Value, 0, 0,
+                             new Rectangle(0, 0, originalImage.Value.Width/2, originalImage.Value.Height),
+                             GraphicsUnit.Pixel);
+
+                Graphics g2 = Graphics.FromImage(secondBitmap);
+                g2.DrawImage(originalImage.Value, 0, 0,
+                             new Rectangle(originalImage.Value.Width / 2, 0, originalImage.Value.Width / 2, originalImage.Value.Height),
+                             GraphicsUnit.Pixel);
+
+                r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width/2,
+                                   originalImage.Key.Height);
+
+                r2 = new Rectangle(originalImage.Key.X + originalImage.Key.Width/2, originalImage.Key.Y, originalImage.Key.Width/2,
+                                   originalImage.Key.Height);
+            }
             else
             {
-                Bitmap firstBitmap;
-                Bitmap secondBitmap;
+                //split horizontally
 
-                Rectangle r1;
-                Rectangle r2;
+                firstBitmap = new Bitmap(originalImage.Value.Width, originalImage.Value.Height/2);
+                secondBitmap = new Bitmap(originalImage.Value.Width, originalImage.Value.Height/2);
 
-                if (originalImage.Value.Width > originalImage.Value.Height)
-                {
-                    //split vertically
-                    firstBitmap = new Bitmap(originalImage.Value.Width/2, originalImage.Value.Height);
-                    secondBitmap = new Bitmap(originalImage.Value.Width/2, originalImage.Value.Height);
+                Graphics g1 = Graphics.FromImage(firstBitmap);
+                g1.DrawImage(originalImage.Value, 0, 0,
+                             new Rectangle(0, 0, originalImage.Value.Width, originalImage.Value.Height/2),
+                             GraphicsUnit.Pixel);
 
-                    Graphics g1 = Graphics.FromImage(firstBitmap);
-                    g1.DrawImage(originalImage.Value, 0, 0,
-                                 new Rectangle(0, 0, originalImage.Value.Width/2, originalImage.Value.Height),
-                                 GraphicsUnit.Pixel);
+                Graphics g2 = Graphics.FromImage(secondBitmap);
+                g2.DrawImage(originalImage.Value, 0, 0,
+                             new Rectangle(0, originalImage.Value.Height/2, originalImage.Value.Width, originalImage.Value.Height/2),
+                             GraphicsUnit.Pixel);
 
-                    Graphics g2 = Graphics.FromImage(secondBitmap);
-                    g2.DrawImage(originalImage.Value, 0, 0,
-                                 new Rectangle(originalImage.Value.Width / 2 + 1, 0, originalImage.Value.Width / 2, originalImage.Value.Height),
-                                 GraphicsUnit.Pixel);
+                r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width,
+                                   originalImage.Key.Height/2);
 
-                    r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width/2,
-                                             originalImage.Key.Height);
-
-                    r2 = new Rectangle(originalImage.Key.X + originalImage.Key.Width/2, originalImage.Key.Y, originalImage.Key.Width/2,
-                                             originalImage.Key.Height);
-                }
-                else
-                {
-                    //split horizontally
-
-                    firstBitmap = new Bitmap(originalImage.Value.Width, originalImage.Value.Height/2);
-                    secondBitmap = new Bitmap(originalImage.Value.Width, originalImage.Value.Height/2);
-
-                    Graphics g1 = Graphics.FromImage(firstBitmap);
-                    g1.DrawImage(originalImage.Value, 0, 0,
-                                 new Rectangle(0, 0, originalImage.Value.Width, originalImage.Value.Height/2),
-                                 GraphicsUnit.Pixel);
-
-                    Graphics g2 = Graphics.FromImage(secondBitmap);
-                    g2.DrawImage(originalImage.Value, 0, 0,
-                                 new Rectangle(0, originalImage.Value.Height/2, originalImage.Value.Width, originalImage.Value.Height/2),
-                                 GraphicsUnit.Pixel);
-
-                    r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width,
-                                             originalImage.Key.Height/2);
-
-                    r2 = new Rectangle(originalImage.Key.X, originalImage.Key.Y + originalImage.Key.Height/2, originalImage.Key.Width,
-                                             originalImage.Key.Height/2);
-                }
-
-
-                return Split(new KeyValuePair<Rectangle, Bitmap>(r1, firstBitmap), maxSize).Concat(
-                    Split(new KeyValuePair<Rectangle, Bitmap>(r2, secondBitmap), maxSize)).ToDictionary(p => p.Key, p => p.Value);
+                r2 = new Rectangle(originalImage.Key.X, originalImage.Key.Y + originalImage.Key.Height/2, originalImage.Key.Width,
+                                   originalImage.Key.Height/2);
             }
+
+
+            return Split(new KeyValuePair<Rectangle, Bitmap>(r1, firstBitmap), maxSize).Concat(
+                Split(new KeyValuePair<Rectangle, Bitmap>(r2, secondBitmap), maxSize)).ToDictionary(p => p.Key, p => p.Value);
         }
 
         public static Dictionary<Rectangle, Bitmap> Split(Dictionary<Rectangle, Bitmap> originalImagesDict, int maxSize)
