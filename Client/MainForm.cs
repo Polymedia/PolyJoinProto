@@ -54,10 +54,11 @@ namespace Polymedia.PolyJoin.Client
         {
             InitializeComponent();
 
+            dataGridView.AutoGenerateColumns = false;
             dataGridView.SelectionChanged += (sender, ea) => dataGridView.ClearSelection();
             dataGridView.CellPainting += (sender, args) =>
                 {
-                    if (dataGridView.Columns["ColorColumn"].Index == args.ColumnIndex && args.RowIndex >= 0)
+                    if (dataGridView.Columns["ColorColumn"] != null && dataGridView.Columns["ColorColumn"].Index == args.ColumnIndex && args.RowIndex >= 0)
                     {
                         using (
                             Brush gridBrush = new SolidBrush(dataGridView.GridColor),
@@ -84,18 +85,24 @@ namespace Polymedia.PolyJoin.Client
 
             conferenceIdValueLabel.DoubleClick += (sender, args) => { Clipboard.SetText(conferenceIdValueLabel.Text); };
             
-            FormClosed += (sender, ea) =>
+            VisibleChanged += (sender, ea) =>
                 {
-                    _runProcessCommandsThread = false;
-                    _runDiffDetectThread = false;
-                    _isPresenter = false;
-                    _presenterWidth = 0;
-                    _presenterHeight = 0;
-                    _id = string.Empty;
+                    if (!Visible)
+                    {
+                        _runProcessCommandsThread = false;
+                        _runDiffDetectThread = false;
+                        _isPresenter = false;
+                        _presenterWidth = 0;
+                        _presenterHeight = 0;
+                        _id = string.Empty;
 
-                    conferenceIdValueLabel.Text = string.Empty;
-                    pictureBox.Image = null;
-                    roleValueLabel.Text = string.Empty;
+                        conferenceIdValueLabel.Text = string.Empty;
+                        roleValueLabel.Text = string.Empty;
+
+                        pictureBox.Image = null;
+
+                        dataGridView.DataSource = null;
+                    }
                 };
 
             FormClosing += (sender, ea) =>
@@ -254,7 +261,7 @@ namespace Polymedia.PolyJoin.Client
                     foreach (DataGridViewRow  row in dataGridView.Rows)
                         if (row.Cells["IdColumn"].Value.Equals(_id))
                             foreach (DataGridViewCell cell in row.Cells)
-                                cell.Style.BackColor = Color.LightSkyBlue;
+                                cell.Style.BackColor = Color.Gainsboro;
                 }));
         }
 

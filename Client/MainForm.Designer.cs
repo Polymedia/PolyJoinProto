@@ -41,7 +41,7 @@
             this.conferenceIdlabel = new System.Windows.Forms.Label();
             this.IdColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.IsPresenterColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.IsPresenterColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.ColorColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
@@ -198,6 +198,8 @@
             this.IsPresenterColumn.HeaderText = "Is presenter";
             this.IsPresenterColumn.Name = "IsPresenterColumn";
             this.IsPresenterColumn.ReadOnly = true;
+            this.IsPresenterColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.IsPresenterColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             // 
             // ColorColumn
             // 
@@ -205,6 +207,7 @@
             this.ColorColumn.HeaderText = "Color";
             this.ColorColumn.Name = "ColorColumn";
             this.ColorColumn.ReadOnly = true;
+            this.ColorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
             // MainForm
             // 
@@ -241,7 +244,7 @@
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.DataGridViewTextBoxColumn IdColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn NameColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn IsPresenterColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn IsPresenterColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColorColumn;
 
     }
