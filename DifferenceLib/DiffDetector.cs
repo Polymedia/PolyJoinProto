@@ -6,7 +6,6 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 
 namespace DifferenceLib
@@ -19,7 +18,7 @@ namespace DifferenceLib
 
     public class DiffDetector : IDiffDetector
     {
-        private Bitmap oldImage;
+        private Bitmap _oldImage;
 
         //private Stopwatch sw = new Stopwatch();
 
@@ -31,8 +30,8 @@ namespace DifferenceLib
 
             Image<Bgr, Byte> Frame = new Image<Bgr, byte>(newFrame);
 
-            if (oldImage == null || oldImage.Height != newFrame.Height) oldImage = new Bitmap(newFrame.Width, newFrame.Height);
-            Previous_Frame = new Image<Bgr, byte>(oldImage);
+            if (_oldImage == null || _oldImage.Height != newFrame.Height) _oldImage = new Bitmap(newFrame.Width, newFrame.Height);
+            Previous_Frame = new Image<Bgr, byte>(_oldImage);
             Image<Bgr, Byte> Difference;
 
             Difference = Previous_Frame.AbsDiff(Frame);
@@ -90,14 +89,14 @@ namespace DifferenceLib
 
         private void UpdateOldFrame(DiffContainer diffs)
         {
-            Graphics g = Graphics.FromImage(oldImage);
+            Graphics g = Graphics.FromImage(_oldImage);
 
             foreach (var p in diffs.Data)
             {
                 g.DrawImage(p.Value, p.Key);
             }
 
-            Previous_Frame = new Image<Bgr, byte>(oldImage);
+            Previous_Frame = new Image<Bgr, byte>(_oldImage);
         }
 
         UnmanagedImage prevousFrame = null;
@@ -174,10 +173,10 @@ namespace DifferenceLib
             unsafe
             {
 
-                for (int i = 0; i < newFrame.Width; ++i)
+                for (int j = 0; j < newFrame.Height; ++j)
                 {
                     var needBreak = false;
-                    for (int j = 0; j < newFrame.Height; ++j)
+                    for (int i = 0; i < newFrame.Width; ++i)
                     {
                         if (
                             *
@@ -196,10 +195,10 @@ namespace DifferenceLib
                         break;
                 }
 
-                for (int i = 0; i < newFrame.Width; ++i)
+                for (int j = newFrame.Height - 1; j >= 0; --j)
                 {
                     var needBreak = false;
-                    for (int j = newFrame.Height - 1; j >= 0; --j)
+                    for (int i = 0; i < newFrame.Width; ++i)
                     {
                         if (
                             *
@@ -218,10 +217,10 @@ namespace DifferenceLib
                         break;
                 }
 
-                for (int j = 0; j < newFrame.Height; ++j)
+                for (int i = 0; i < newFrame.Width; ++i)
                 {
                     var needBreak = false;
-                    for (int i = 0; i < newFrame.Width; ++i)
+                    for (int j = 0; j < newFrame.Height; ++j)
                     {
                         if (
                             *
@@ -240,10 +239,10 @@ namespace DifferenceLib
                         break;
                 }
 
-                for (int j = 0; j < newFrame.Height; ++j)
+                for (int i = newFrame.Width - 1; i >= 0; --i)
                 {
                     var needBreak = false;
-                    for (int i = newFrame.Width - 1; i >= 0; --i)
+                    for (int j = 0; j < newFrame.Height; ++j)
                     {
                         if (
                             *
@@ -265,12 +264,20 @@ namespace DifferenceLib
 
             if (startY - 10 >= 0)
                 startY -= 10;
+            else
+                startY = 0;
             if (endY + 10 < newFrame.Height)
                 endY += 10;
+            else
+                endY = newFrame.Height - 1;
             if (startX - 10 >= 0)
                 startX -= 10;
+            else
+                startX = 0;
             if (endX + 10 < newFrame.Width)
                 endX += 10;
+            else
+                endX = newFrame.Width - 1;
 
             newFrame.UnlockBits(bitmapData);
             _oldImage.UnlockBits(oldBitmapData);
