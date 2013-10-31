@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Common;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
+using Painter;
 
 namespace Polymedia.PolyJoin.Client
 {
@@ -49,6 +50,8 @@ namespace Polymedia.PolyJoin.Client
 
         private Bitmap _diffFrame = null;
 
+        private PainterControl _paintControl;
+
         public MainForm()
         {
             InitializeComponent();
@@ -64,7 +67,7 @@ namespace Polymedia.PolyJoin.Client
                     _presenterHeight = 0;
 
                     conferenceIdValueLabel.Text = string.Empty;
-                    pictureBox.Image = null;
+                    _paintControl.BackgroundImage = null;
                     roleValueLabel.Text = string.Empty;
                 };
 
@@ -76,6 +79,10 @@ namespace Polymedia.PolyJoin.Client
                     _clientWebSocketConnection.ConnectionStateChanged -=
                         ClientWebSocketConnectionOnConnectionStateChanged;
             };
+
+            _paintControl = new PainterControl(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+            tableLayoutPanel.Controls.Add(_paintControl, 1, 1);
+            _paintControl.Dock = DockStyle.Fill;
         }
 
         private void ClientWebSocketConnectionOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> simpleEventArgs)
@@ -172,11 +179,11 @@ namespace Polymedia.PolyJoin.Client
                         {
                             if (draw)
                             {
-                                pictureBox.Invoke(new Action(
+                                _paintControl.Invoke(new Action(
                                                       () =>
                                                       {
-                                                          pictureBox.Image = _diffFrame;
-                                                          pictureBox.Refresh();
+                                                          _paintControl.Image = _diffFrame;
+                                                          _paintControl.Refresh();
                                                       })
                                     );
                             }

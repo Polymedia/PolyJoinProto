@@ -4,17 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{82C87CC4-FED7-48AA-8A27-10F06D86AEEA}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{24F25647-91F5-4385-AE3E-3A04B9D12E71}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Client</RootNamespace>
-    <AssemblyName>Client</AssemblyName>
+    <RootNamespace>PaintControl</RootNamespace>
+    <AssemblyName>PaintControl</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +23,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -41,55 +39,29 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="WebSocket4Net">
-      <HintPath>..\Lib\WebSocket4Net.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientWebSocketConnection.cs" />
-    <Compile Include="ConnectForm.cs">
-      <SubType>Form</SubType>
+    <Compile Include="Figure.cs" />
+    <Compile Include="IPaintContainer.cs" />
+    <Compile Include="PaintContainer.cs" />
+    <Compile Include="PainterControl.cs">
+      <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ConnectForm.Designer.cs">
-      <DependentUpon>ConnectForm.cs</DependentUpon>
+    <Compile Include="PainterControl.Designer.cs">
+      <DependentUpon>PainterControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Connection.cs" />
-    <Compile Include="ConnectionManager.cs" />
-    <Compile Include="MainForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <EmbeddedResource Include="PainterControl.resx">
+      <DependentUpon>PainterControl.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{0053a222-c5a3-4e67-bb1e-c052b404f231}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DifferenceLib\DifferenceLib.csproj">
-      <Project>{270cef7f-82a9-4fdf-9db8-316768a9db65}</Project>
-      <Name>DifferenceLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PaintControl\PaintControl.csproj">
-      <Project>{24f25647-91f5-4385-ae3e-3a04b9d12e71}</Project>
-      <Name>PaintControl</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="ConnectForm.resx">
-      <DependentUpon>ConnectForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

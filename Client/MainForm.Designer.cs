@@ -29,17 +29,15 @@
         private void InitializeComponent()
         {
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.pictureBox = new System.Windows.Forms.PictureBox();
             this.topPanel = new System.Windows.Forms.Panel();
             this.connectionStateValueLabel = new System.Windows.Forms.Label();
             this.connectionStateLabel = new System.Windows.Forms.Label();
             this.leftPanel = new System.Windows.Forms.Panel();
-            this.conferenceIdValueLabel = new System.Windows.Forms.Label();
-            this.conferenceIdlabel = new System.Windows.Forms.Label();
             this.roleValueLabel = new System.Windows.Forms.Label();
             this.roleLabel = new System.Windows.Forms.Label();
+            this.conferenceIdValueLabel = new System.Windows.Forms.Label();
+            this.conferenceIdlabel = new System.Windows.Forms.Label();
             this.tableLayoutPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.topPanel.SuspendLayout();
             this.leftPanel.SuspendLayout();
             this.SuspendLayout();
@@ -49,7 +47,6 @@
             this.tableLayoutPanel.ColumnCount = 2;
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 300F));
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel.Controls.Add(this.pictureBox, 1, 1);
             this.tableLayoutPanel.Controls.Add(this.topPanel, 0, 0);
             this.tableLayoutPanel.Controls.Add(this.leftPanel, 0, 1);
             this.tableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -60,17 +57,6 @@
             this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel.Size = new System.Drawing.Size(824, 505);
             this.tableLayoutPanel.TabIndex = 1;
-            // 
-            // pictureBox
-            // 
-            this.pictureBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox.Location = new System.Drawing.Point(303, 42);
-            this.pictureBox.Name = "pictureBox";
-            this.pictureBox.Size = new System.Drawing.Size(518, 460);
-            this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox.TabIndex = 1;
-            this.pictureBox.TabStop = false;
             // 
             // topPanel
             // 
@@ -115,23 +101,6 @@
             this.leftPanel.Size = new System.Drawing.Size(294, 460);
             this.leftPanel.TabIndex = 2;
             // 
-            // conferenceIdValueLabel
-            // 
-            this.conferenceIdValueLabel.AutoSize = true;
-            this.conferenceIdValueLabel.Location = new System.Drawing.Point(105, 13);
-            this.conferenceIdValueLabel.Name = "conferenceIdValueLabel";
-            this.conferenceIdValueLabel.Size = new System.Drawing.Size(0, 13);
-            this.conferenceIdValueLabel.TabIndex = 5;
-            // 
-            // conferenceIdlabel
-            // 
-            this.conferenceIdlabel.AutoSize = true;
-            this.conferenceIdlabel.Location = new System.Drawing.Point(9, 13);
-            this.conferenceIdlabel.Name = "conferenceIdlabel";
-            this.conferenceIdlabel.Size = new System.Drawing.Size(79, 13);
-            this.conferenceIdlabel.TabIndex = 4;
-            this.conferenceIdlabel.Text = "Conference ID:";
-            // 
             // roleValueLabel
             // 
             this.roleValueLabel.AutoSize = true;
@@ -149,6 +118,23 @@
             this.roleLabel.TabIndex = 6;
             this.roleLabel.Text = "Role:";
             // 
+            // conferenceIdValueLabel
+            // 
+            this.conferenceIdValueLabel.AutoSize = true;
+            this.conferenceIdValueLabel.Location = new System.Drawing.Point(105, 13);
+            this.conferenceIdValueLabel.Name = "conferenceIdValueLabel";
+            this.conferenceIdValueLabel.Size = new System.Drawing.Size(0, 13);
+            this.conferenceIdValueLabel.TabIndex = 5;
+            // 
+            // conferenceIdlabel
+            // 
+            this.conferenceIdlabel.AutoSize = true;
+            this.conferenceIdlabel.Location = new System.Drawing.Point(9, 13);
+            this.conferenceIdlabel.Name = "conferenceIdlabel";
+            this.conferenceIdlabel.Size = new System.Drawing.Size(79, 13);
+            this.conferenceIdlabel.TabIndex = 4;
+            this.conferenceIdlabel.Text = "Conference ID:";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -159,7 +145,6 @@
             this.Text = "PolyJoin";
             this.tableLayoutPanel.ResumeLayout(false);
             this.tableLayoutPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.topPanel.ResumeLayout(false);
             this.topPanel.PerformLayout();
             this.leftPanel.ResumeLayout(false);
@@ -174,7 +159,6 @@
         private System.Windows.Forms.Panel topPanel;
         private System.Windows.Forms.Label connectionStateValueLabel;
         private System.Windows.Forms.Label connectionStateLabel;
-        private System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.Panel leftPanel;
         private System.Windows.Forms.Label conferenceIdValueLabel;
         private System.Windows.Forms.Label conferenceIdlabel;
