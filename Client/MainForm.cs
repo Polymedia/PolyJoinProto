@@ -211,7 +211,7 @@ namespace Polymedia.PolyJoin.Client
 
             _diffDetectThread = new Thread(() =>
             {
-                DiffDetector _diffDetector = new DiffDetector();
+                IDiffDetector _diffDetector = new CustomDiffDetector();
                 while (_runDiffDetectThread)
                 {
                     try
@@ -226,7 +226,7 @@ namespace Polymedia.PolyJoin.Client
                                                                   Screen.PrimaryScreen.Bounds.Width,
                                                                   Screen.PrimaryScreen.Bounds.Height));
 
-                            if (ScreenshotScale != 1)
+                            if (Math.Abs(ScreenshotScale - 1) > 0.01)
                                 screenShot = new Bitmap(screenShot,
                                                         (int)
                                                         (Screen.PrimaryScreen.Bounds.Width * ScreenshotScale),
