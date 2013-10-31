@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Common;
 using Microsoft.ServiceModel.WebSockets;
+using Polymedia.PolyJoin.Common;
 
 namespace Polymedia.PolyJoin.Server
 {
@@ -22,7 +22,7 @@ namespace Polymedia.PolyJoin.Server
 
             Console.WriteLine("Connection opened");
 
-            ConnectionStateChanged.Invoke(this, new WebSocketEventArgs<bool>(true));
+            ConnectionStateChanged.Invoke(this, new SimpleEventArgs<bool>(true));
 
             _isOpened = true;
 
@@ -36,7 +36,7 @@ namespace Polymedia.PolyJoin.Server
             
             Console.WriteLine("Connection message bytes");
 
-            DataRecived.Invoke(this, new WebSocketEventArgs<byte[]>() {Value = data});
+            DataRecived.Invoke(this, new SimpleEventArgs<byte[]>() { Value = data });
         }
 
         public override void OnMessage(string message)
@@ -46,7 +46,7 @@ namespace Polymedia.PolyJoin.Server
             
             Console.WriteLine("Connection message string");
 
-            MessageRecived.Invoke(this, new WebSocketEventArgs<string>() { Value = message });
+            MessageRecived.Invoke(this, new SimpleEventArgs<string>() { Value = message });
         }
 
         protected override void OnError()
@@ -62,7 +62,7 @@ namespace Polymedia.PolyJoin.Server
             
             ConnectionManager.RemoveConnection(this);
 
-            ConnectionStateChanged.Invoke(this, new WebSocketEventArgs<bool>(false));
+            ConnectionStateChanged.Invoke(this, new SimpleEventArgs<bool>(false));
 
             Console.WriteLine("Connection closed");
         }
@@ -92,11 +92,11 @@ namespace Polymedia.PolyJoin.Server
             return true;
         }
 
-        public event EventHandler<WebSocketEventArgs<string>> MessageRecived = delegate {  };
+        public event EventHandler<SimpleEventArgs<string>> MessageRecived = delegate { };
 
-        public event EventHandler<WebSocketEventArgs<byte[]>> DataRecived = delegate { };
+        public event EventHandler<SimpleEventArgs<byte[]>> DataRecived = delegate { };
 
-        public event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged = delegate { }; 
+        public event EventHandler<SimpleEventArgs<bool>> ConnectionStateChanged = delegate { }; 
 
         #endregion IWebSocketConnection
     }

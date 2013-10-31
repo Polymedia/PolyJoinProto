@@ -43,6 +43,7 @@
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\DiffCommand.cs" />
     <Compile Include="Commands\DisconnectCommand.cs" />
+    <Compile Include="Commands\ParticipantsCommand.cs" />
     <Compile Include="Commands\QueryStateCommand.cs" />
     <Compile Include="ConnectionWrapper.cs" />
     <Compile Include="IWebSocketConnection.cs" />

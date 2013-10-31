@@ -1,5 +1,4 @@
-﻿using Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +11,8 @@ namespace Polymedia.PolyJoin.Common
         GetState,
         State,
         Diff,
-        Disconnect
+        Disconnect,
+        Participants
     }
 
     [Serializable]

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using Common;
 
 namespace Polymedia.PolyJoin.Common
 {
@@ -14,7 +13,7 @@ namespace Polymedia.PolyJoin.Common
             get { return _webSocketConnection; }
         }
 
-        public event EventHandler<WebSocketEventArgs<bool>> ConnectionStateChanged = delegate { }; 
+        public event EventHandler<SimpleEventArgs<bool>> ConnectionStateChangedEvent = delegate { }; 
 
         public ConnectionWrapper(IWebSocketConnection webSocketConnection)
         {
@@ -58,12 +57,12 @@ namespace Polymedia.PolyJoin.Common
             return (T)ByteArrayToObject(bytes);
         }
 
-        private void WebSocketConnectionOnConnectionStateChanged(object sender, WebSocketEventArgs<bool> webSocketEventArgs)
+        private void WebSocketConnectionOnConnectionStateChanged(object sender, SimpleEventArgs<bool> webSocketEventArgs)
         {
-            ConnectionStateChanged.Invoke(_webSocketConnection, webSocketEventArgs);
+            ConnectionStateChangedEvent.Invoke(_webSocketConnection, webSocketEventArgs);
         }
 
-        private void WebSocketConnectionOnDataRecived(object sender, WebSocketEventArgs<byte[]> webSocketEventArgs)
+        private void WebSocketConnectionOnDataRecived(object sender, SimpleEventArgs<byte[]> webSocketEventArgs)
         {
             Command command = ByteArrayToObject<Command>(webSocketEventArgs.Value);
             OnReceivedCommand(command);

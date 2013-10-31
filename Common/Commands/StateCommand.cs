@@ -13,6 +13,7 @@ namespace Polymedia.PolyJoin.Common
             CommandName = CommandName.State;
         }
 
+        public string ParticipantId { get; set; }
         public bool IsPresenter { get; set; }
         public int PresenterWidth { get; set; }
         public int PresenterHeight { get; set; }
