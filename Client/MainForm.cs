@@ -51,6 +51,7 @@ namespace Polymedia.PolyJoin.Client
         private int _presenterHeight;
         private string _id;
 
+        private Color _paintColor;
         private Bitmap _diffFrame = null;
 
         private PainterControl _paintControl;
@@ -127,7 +128,7 @@ namespace Polymedia.PolyJoin.Client
 
         private void InitPaintControl(int width, int height)
         {
-            _paintControl = new PainterControl(_presenterWidth, _presenterHeight);
+            _paintControl = new PainterControl(_presenterWidth, _presenterHeight, Color.Black);
             tableLayoutPanel.Controls.Add(_paintControl, 1, 1);
             _paintControl.Dock = DockStyle.Fill;
 
@@ -302,6 +303,10 @@ namespace Polymedia.PolyJoin.Client
                         if (row.Cells["IdColumn"].Value.Equals(_id))
                             foreach (DataGridViewCell cell in row.Cells)
                                 cell.Style.BackColor = Color.Gainsboro;
+
+                    var me = participantsCommand.Participants.Where(p => p.Id == _id).First();
+                    _paintColor = Color.FromArgb(me.BrushArgb);
+                    _paintControl.Color = _paintColor;
                 }));
         }
 

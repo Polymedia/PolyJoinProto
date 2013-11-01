@@ -21,13 +21,14 @@ namespace Painter
         int _imageHeight;
         DateTime _lastPointTime = DateTime.Now;
 
-        public PainterControl(int width,int height)
+        public PainterControl(int width,int height, Color color)
         {
             InitializeComponent();
             _imageWidth = width;
             _imageHeight = height;
             _painter = new PaintContainer(width, height);
             pictureBox.Image = _painter.Image;
+            Color = color;
         }
 
         
@@ -47,6 +48,8 @@ namespace Painter
 
         public event EventHandler<SimpleEventArgs<string>> FigureRemoved;
 
+        public Color Color { get; set; }
+
         public Image Image
         {
             set
@@ -62,7 +65,7 @@ namespace Painter
              
             _mouseButtonDown = true;
             _currentFigureId = Guid.NewGuid().ToString();
-            _painter.AddFigure(_currentFigureId, new List<Point>(), Color.FromArgb(0, 0, 0));
+            _painter.AddFigure(_currentFigureId, new List<Point>(), Color);
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
