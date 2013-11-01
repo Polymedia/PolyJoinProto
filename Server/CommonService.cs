@@ -22,6 +22,8 @@ namespace Polymedia.PolyJoin.Server
         {
             ConnectionManager.GetStateCommandReceived += ConnectionManagerOnGetStateCommandReceived;
             ConnectionManager.DiffCommandReceived += ConnectionManagerOnDiffCommandReceived;
+            ConnectionManager.PaintAddFigureCommandRecieved+=ConnectionManagerPaintAddFigureCommandRecieved;
+            ConnectionManager.PaintDeleteFigureCommandRecieved += ConnectionManagerPaintDelteFigureCommandRecieved;
 
             Thread thread = new Thread(() => { 
                 while(true)
@@ -120,7 +122,8 @@ namespace Polymedia.PolyJoin.Server
                             continue;
                         connection.SendDiff(conference.Id, diffCommand.DiffItem);
                     }
-                }else if (command is DisconnectCommand)
+                }
+                else if (command is DisconnectCommand)
                 {
                     var disconnectCommand = command as DisconnectCommand;
 
@@ -143,6 +146,36 @@ namespace Polymedia.PolyJoin.Server
 
                     
                 }
+                else if (command is PaintAddFigureCommand)
+                {
+                    var addFigureCommand = command as PaintAddFigureCommand;
+
+                    Conference conference = conferences[addFigureCommand.ConferenceId];
+
+                    if (conference == null)
+                        return;
+
+                    foreach (var connection in conference.Connections)
+                    {
+                        if (command.SenderConnection != connection)
+                            connection.PaintAddFigureCommand(conference.Id, addFigureCommand.FigureId, addFigureCommand.Points, addFigureCommand.Color);
+                    }
+                }
+                else if (command is PaintDeleteFigureCommand)
+                {
+                    var deleteFigureCommand = command as PaintDeleteFigureCommand;
+
+                    Conference conference = conferences[deleteFigureCommand.ConferenceId];
+
+                    if (conference == null)
+                        return;
+
+                    foreach (var connection in conference.Connections)
+                    {
+                        if (command.SenderConnection != connection)
+                            connection.PaintDeleteFigureCommand(conference.Id, deleteFigureCommand.FigureId);
+                    }
+                }
             }
         }
 
@@ -154,6 +187,16 @@ namespace Polymedia.PolyJoin.Server
         private static void ConnectionManagerOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> connectionEventArgs)
         {
             queue.Enqueue(connectionEventArgs.Value);
+        }
+
+        private static void ConnectionManagerPaintAddFigureCommandRecieved(object sender, SimpleEventArgs<PaintAddFigureCommand> e)
+        {
+            queue.Enqueue(e.Value);
+        }
+
+        private static void ConnectionManagerPaintDelteFigureCommandRecieved(object sender, SimpleEventArgs<PaintDeleteFigureCommand> e)
+        {
+            queue.Enqueue(e.Value);
         }
 
         private static void BroadcastParticipantsCommand(Conference conference)

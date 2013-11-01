@@ -14,6 +14,8 @@ namespace Polymedia.PolyJoin.Server
 
         public static event EventHandler<SimpleEventArgs<QueryStateCommand>> GetStateCommandReceived = delegate { };
         public static event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
+        public static event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
+        public static event EventHandler<SimpleEventArgs<PaintDeleteFigureCommand>> PaintDeleteFigureCommandRecieved = delegate { };
 
         public static void AddConnection(Connection connection)
         {
@@ -26,7 +28,18 @@ namespace Polymedia.PolyJoin.Server
 
             serverWebSocketConnection.GetStateCommandReceived += ServerWebSocketConnectionOnGetStateCommandReceived;
             serverWebSocketConnection.DiffCommandReceived += ServerWebSocketConnectionOnDiffCommandReceived;
+            serverWebSocketConnection.PaintAddFigureCommandRecieved+=ServerWebSocketConnectionPaintAddFigureCommandRecieved;
+            serverWebSocketConnection.PaintDeleteFigureCommandRecieved += ServerWebSocketConnectionPaintDeleteFigureCommandRecieved;
+        }
 
+        private static void ServerWebSocketConnectionPaintAddFigureCommandRecieved(object sender, SimpleEventArgs<PaintAddFigureCommand> e)
+        {
+            PaintAddFigureCommandRecieved.Invoke(sender, e);
+        }
+
+        private static void ServerWebSocketConnectionPaintDeleteFigureCommandRecieved(object sender, SimpleEventArgs<PaintDeleteFigureCommand> e)
+        {
+            PaintDeleteFigureCommandRecieved.Invoke(sender, e);
         }
 
         public static void RemoveConnection(Connection connection)

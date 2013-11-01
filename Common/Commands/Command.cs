@@ -13,7 +13,9 @@ namespace Polymedia.PolyJoin.Common
         Diff,
         Disconnect,
         Participants,
-        Input
+        Input,
+        PaintAddFigure,
+        PaintDeleteFigure
     }
 
     [Serializable]
