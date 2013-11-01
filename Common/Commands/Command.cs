@@ -12,7 +12,8 @@ namespace Polymedia.PolyJoin.Common
         State,
         Diff,
         Disconnect,
-        Participants
+        Participants,
+        Input
     }
 
     [Serializable]

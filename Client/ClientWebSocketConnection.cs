@@ -31,6 +31,14 @@ namespace Polymedia.PolyJoin.Client
             SendCommand(command);
         }
 
+        public void SendInput(string conferenceId, int mouseX, int mouseY)
+        {
+            InputCommand command = new InputCommand(conferenceId);
+            command.MouseX = mouseX;
+            command.MouseY = mouseY;
+            SendCommand(command);
+        }
+
         protected override void OnReceivedCommand(Command command)
         {
             //TODO generate events on command received
