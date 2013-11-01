@@ -96,7 +96,9 @@ namespace Painter
 
         public Figure GetFigureById(int id)
         {
-            return _figuresDictionary[id];
+            if (_figuresDictionary.ContainsKey(id))
+                return _figuresDictionary[id];
+            return null;
         }
 
         private bool PointCloseToSegment(double pointX, double pointY, double x1, double y1, double x2, double y2)
@@ -127,19 +129,21 @@ namespace Painter
             p.StartCap = System.Drawing.Drawing2D.LineCap.Round;
             p.EndCap = System.Drawing.Drawing2D.LineCap.Round;
 
-            Graphics g = Graphics.FromImage(_image);
-            var points = f.Points.ToArray();
-            if (points.Count() == 1)
-                g.DrawLine(p,
-                    new Point(points.First().X, points.First().Y),
-                    new Point(points.First().X, points.First().Y));
-            else
+            using (Graphics g = Graphics.FromImage(_image))
             {
-                for (int i = 0; i < points.Length - 1; i++)
-                {
+                var points = f.Points.ToArray();
+                if (points.Count() == 1)
                     g.DrawLine(p,
-                        new Point(points[i].X, points[i].Y),
-                        new Point(points[i + 1].X, points[i + 1].Y));
+                        new Point(points.First().X, points.First().Y),
+                        new Point(points.First().X, points.First().Y));
+                else
+                {
+                    for (int i = 0; i < points.Length - 1; i++)
+                    {
+                        g.DrawLine(p,
+                            new Point(points[i].X, points[i].Y),
+                            new Point(points[i + 1].X, points[i + 1].Y));
+                    }
                 }
             }
         }

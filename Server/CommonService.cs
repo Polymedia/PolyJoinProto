@@ -156,7 +156,8 @@ namespace Polymedia.PolyJoin.Server
 
                     foreach (var connection in conference.Connections)
                     {
-                        connection.PaintAddFigureCommand(conference.Id, addFigureCommand.Points, addFigureCommand.Color);
+                        if (command.SenderConnection != connection)
+                            connection.PaintAddFigureCommand(conference.Id, addFigureCommand.Points, addFigureCommand.Color);
                     }
                 }
             }

@@ -67,7 +67,7 @@ namespace Painter
         {
             _mouseButtonDown = false;
 
-            if (FigureAdded != null)
+            if (_painter.GetFigureById(_currentFigureId)!=null && FigureAdded != null)
                 FigureAdded.Invoke(this, new SimpleEventArgs<Figure>(_painter.GetFigureById(_currentFigureId)));
 
             _currentFigureId = -1;

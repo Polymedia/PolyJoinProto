@@ -195,7 +195,10 @@ namespace Polymedia.PolyJoin.Client
 
         private void ClientWebSocketConnectionPaintAddFigureCommandRecieved(object sender, SimpleEventArgs<PaintAddFigureCommand> e)
         {
-            _paintControl.AddFigure(e.Value.Points, e.Value.Color);
+            Invoke(new Action(() => 
+            {
+                _paintControl.AddFigure(e.Value.Points, e.Value.Color);
+            }));
         }
 
         public void StartProcessCommandsThread()
