@@ -78,6 +78,10 @@
       <Project>{270cef7f-82a9-4fdf-9db8-316768a9db65}</Project>
       <Name>DifferenceLib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PaintControl\PaintControl.csproj">
+      <Project>{24f25647-91f5-4385-ae3e-3a04b9d12e71}</Project>
+      <Name>PaintControl</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ConnectForm.resx">

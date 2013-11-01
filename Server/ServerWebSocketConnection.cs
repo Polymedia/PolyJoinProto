@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
+using System.Drawing;
 
 namespace Polymedia.PolyJoin.Server
 {
@@ -12,6 +13,8 @@ namespace Polymedia.PolyJoin.Server
     {
         public event EventHandler<SimpleEventArgs<QueryStateCommand>> GetStateCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
+        public event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
+        public event EventHandler<SimpleEventArgs<PaintDeleteFigureCommand>> PaintDeleteFigureCommandRecieved = delegate { };
 
         public string Id = Guid.NewGuid().ToString();
         public string Name = string.Empty;
@@ -45,6 +48,18 @@ namespace Polymedia.PolyJoin.Server
             SendCommand(command);
         }
 
+        public void PaintAddFigureCommand(string conferenceId, string figureId, List<Point> points, Color color)
+        {
+            Command command = new PaintAddFigureCommand(conferenceId, figureId, points, color);
+            SendCommand(command);
+        }
+
+        public void PaintDeleteFigureCommand(string conferenceId, string figureId)
+        {
+            Command command = new PaintDeleteFigureCommand(conferenceId, figureId);
+            SendCommand(command);
+        }
+
         protected override void OnReceivedCommand(Command command)
         {
             command.SenderConnection = this;
@@ -58,6 +73,14 @@ namespace Polymedia.PolyJoin.Server
                 case CommandName.Diff:
                     Console.WriteLine("Command Diff");
                     DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand>() { Value = (DiffCommand)command });
+                    break;
+                case CommandName.PaintAddFigure:
+                    Console.WriteLine("Command PaintAddFigure");
+                    PaintAddFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintAddFigureCommand>() { Value = (PaintAddFigureCommand)command });
+                    break;
+                case CommandName.PaintDeleteFigure:
+                    Console.WriteLine("Command PaintDeleteFigure");
+                    PaintDeleteFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintDeleteFigureCommand>() { Value = (PaintDeleteFigureCommand)command });
                     break;
                 default:
                     Console.WriteLine("Unknown command");

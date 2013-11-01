@@ -10,6 +10,7 @@ using System.Threading;
 using System.Windows.Forms;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
+using Painter;
 
 namespace Polymedia.PolyJoin.Client
 {
@@ -34,6 +35,8 @@ namespace Polymedia.PolyJoin.Client
                 _clientWebSocketConnection.StateCommandReceived += ClientWebSocketConnectionOnStateCommandReceived;
                 _clientWebSocketConnection.DiffCommandReceived += ClientWebSocketConnectionOnDiffCommandReceived;
                 _clientWebSocketConnection.ParticipantsCommandReceived += ClientWebSocketConnectionOnParticipantsCommandReceived;
+                _clientWebSocketConnection.PaintAddFigureCommandRecieved += ClientWebSocketConnectionPaintAddFigureCommandRecieved;
+                _clientWebSocketConnection.PaintDeleteFigureCommandRecieved += ClientWebSocketConnectionPaintDeleteFigureCommandRecieved;
             }
             private get { return _clientWebSocketConnection; }
         }
@@ -48,7 +51,10 @@ namespace Polymedia.PolyJoin.Client
         private int _presenterHeight;
         private string _id;
 
+        private Color _paintColor;
         private Bitmap _diffFrame = null;
+
+        private PainterControl _paintControl;
 
         public MainForm()
         {
@@ -97,10 +103,10 @@ namespace Polymedia.PolyJoin.Client
                         _id = string.Empty;
 
                         conferenceIdValueLabel.Text = string.Empty;
+                        _paintControl.BackgroundImage = null;
                         roleValueLabel.Text = string.Empty;
 
-                        pictureBox.Image = null;
-
+                        
                         dataGridView.DataSource = null;
                     }
                 };
@@ -118,6 +124,23 @@ namespace Polymedia.PolyJoin.Client
         private void ClientWebSocketConnectionOnParticipantsCommandReceived(object sender, SimpleEventArgs<ParticipantsCommand> simpleEventArgs)
         {
             _queue.Enqueue(simpleEventArgs.Value);
+        }
+
+        private void InitPaintControl(int width, int height)
+        {
+            _paintControl = new PainterControl(_presenterWidth, _presenterHeight, Color.Black);
+            tableLayoutPanel.Controls.Add(_paintControl, 1, 1);
+            _paintControl.Dock = DockStyle.Fill;
+
+            _paintControl.FigureAdded += (s, e) =>
+            {
+                ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Id, e.Value.Points, e.Value.Color);
+            };
+
+            _paintControl.FigureRemoved += (s, e) =>
+            {
+                ClientWebSocketConnection.PaintDeleteFigureCommand(ConferenceId, e.Value);
+            };
         }
 
         private void ClientWebSocketConnectionOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> simpleEventArgs)
@@ -153,6 +176,8 @@ namespace Polymedia.PolyJoin.Client
                         _diffFrame = new Bitmap(_presenterWidth, _presenterHeight);
 
                         roleValueLabel.Text = _isPresenter ? "Presenter" : "Viewer";
+
+                        InitPaintControl(_presenterWidth, _presenterHeight);
                     }
                 }));
         }
@@ -174,6 +199,22 @@ namespace Polymedia.PolyJoin.Client
                         _runProcessCommandsThread = false;
                     }
                 }));
+        }
+
+        private void ClientWebSocketConnectionPaintAddFigureCommandRecieved(object sender, SimpleEventArgs<PaintAddFigureCommand> e)
+        {
+            Invoke(new Action(() => 
+            {
+                _paintControl.AddFigure(e.Value.FigureId, e.Value.Points, e.Value.Color);
+            }));
+        }
+
+        private void ClientWebSocketConnectionPaintDeleteFigureCommandRecieved(object sender, SimpleEventArgs<PaintDeleteFigureCommand> e)
+        {
+            Invoke(new Action(() =>
+            {
+                _paintControl.RemoveFigure(e.Value.FigureId);
+            }));
         }
 
         public void StartProcessCommandsThread()
@@ -214,11 +255,11 @@ namespace Polymedia.PolyJoin.Client
                         {
                             if (draw)
                             {
-                                pictureBox.Invoke(new Action(
+                                _paintControl.Invoke(new Action(
                                                       () =>
                                                       {
-                                                          pictureBox.Image = _diffFrame;
-                                                          pictureBox.Refresh();
+                                                          _paintControl.Image = _diffFrame;
+                                                          _paintControl.Refresh();
                                                       })
                                     );
                             }
@@ -262,6 +303,10 @@ namespace Polymedia.PolyJoin.Client
                         if (row.Cells["IdColumn"].Value.Equals(_id))
                             foreach (DataGridViewCell cell in row.Cells)
                                 cell.Style.BackColor = Color.Gainsboro;
+
+                    var me = participantsCommand.Participants.Where(p => p.Id == _id).First();
+                    _paintColor = Color.FromArgb(me.BrushArgb);
+                    _paintControl.Color = _paintColor;
                 }));
         }
 
