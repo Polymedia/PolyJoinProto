@@ -15,7 +15,7 @@ namespace Painter
     public partial class PainterControl : UserControl
     {
         bool _mouseButtonDown = false;
-        int _currentFigureId = -1;
+        string _currentFigureId = string.Empty;
         IPaintContainer _painter;
         int _imageWidth;
         int _imageHeight;
@@ -31,20 +31,21 @@ namespace Painter
         }
 
         
-        public void AddFigure(List<Point> points, Color color)
+        public void AddFigure(string id, List<Point> points, Color color)
         {
-            _painter.AddFigure(points, color);
+            _painter.AddFigure(id, points, color);
             FillPictureBox();
         }
 
-        public void RemoveFigure(int id)
+        public void RemoveFigure(string id)
         {
-            throw new NotImplementedException();
+            _painter.RemoveFigure(id);
+            FillPictureBox();
         }
 
         public event EventHandler<SimpleEventArgs<Figure>> FigureAdded;
 
-        public event EventHandler FigureRemoved;
+        public event EventHandler<SimpleEventArgs<string>> FigureRemoved;
 
         public Image Image
         {
@@ -57,10 +58,11 @@ namespace Painter
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-                return;
-
+                return; 
+             
             _mouseButtonDown = true;
-            _currentFigureId = _painter.AddFigure(new List<Point>(), Color.FromArgb(0, 0, 0));
+            _currentFigureId = Guid.NewGuid().ToString();
+            _painter.AddFigure(_currentFigureId, new List<Point>(), Color.FromArgb(0, 0, 0));
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
@@ -70,7 +72,7 @@ namespace Painter
             if (_painter.GetFigureById(_currentFigureId)!=null && FigureAdded != null)
                 FigureAdded.Invoke(this, new SimpleEventArgs<Figure>(_painter.GetFigureById(_currentFigureId)));
 
-            _currentFigureId = -1;
+            _currentFigureId = string.Empty ;
             FillPictureBox();
         }
 
@@ -84,7 +86,7 @@ namespace Painter
                 if ((DateTime.Now - _lastPointTime).TotalMilliseconds > 50)
                 {
                     _lastPointTime = DateTime.Now;
-                    _painter.AddPointToFogure(new Point(x, y), _currentFigureId);
+                    _painter.AddPointToFigure(new Point(x, y), _currentFigureId);
                     FillPictureBox();
                 }
             } 
@@ -96,7 +98,13 @@ namespace Painter
             {
                 int x = e.X * _imageWidth / pictureBox.Width;
                 int y = e.Y * _imageHeight / pictureBox.Height;
-                _painter.RemoveFigure(x, y);
+                string removedFigureId = _painter.RemoveFigure(x, y);
+
+                if (!removedFigureId.Equals(string.Empty) && FigureRemoved != null)
+                {
+                    FigureRemoved.Invoke(this, new SimpleEventArgs<string>(removedFigureId));
+                }
+
                 FillPictureBox();
             }
         }

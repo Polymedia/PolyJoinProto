@@ -5,15 +5,17 @@ using System.Text;
 
 namespace Polymedia.PolyJoin.Common
 {
-    public class PaintDeleteFigureCommand:Command
+    [Serializable]
+    public class PaintDeleteFigureCommand : Command
     {
-        public PaintDeleteFigureCommand(string conferenceId, int id):base(conferenceId)
+        public PaintDeleteFigureCommand(string conferenceId, string figureId)
+            : base(conferenceId)
         {
             CommandName = CommandName.PaintDeleteFigure;
 
-            Id = id;
+            FigureId = figureId;
         }
 
-        public int Id;
+        public string FigureId;
     }
 }

@@ -36,6 +36,7 @@ namespace Polymedia.PolyJoin.Client
                 _clientWebSocketConnection.DiffCommandReceived += ClientWebSocketConnectionOnDiffCommandReceived;
                 _clientWebSocketConnection.ParticipantsCommandReceived += ClientWebSocketConnectionOnParticipantsCommandReceived;
                 _clientWebSocketConnection.PaintAddFigureCommandRecieved += ClientWebSocketConnectionPaintAddFigureCommandRecieved;
+                _clientWebSocketConnection.PaintDeleteFigureCommandRecieved += ClientWebSocketConnectionPaintDeleteFigureCommandRecieved;
             }
             private get { return _clientWebSocketConnection; }
         }
@@ -129,9 +130,15 @@ namespace Polymedia.PolyJoin.Client
             _paintControl = new PainterControl(_presenterWidth, _presenterHeight);
             tableLayoutPanel.Controls.Add(_paintControl, 1, 1);
             _paintControl.Dock = DockStyle.Fill;
+
             _paintControl.FigureAdded += (s, e) =>
             {
-                ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Points, e.Value.Color);
+                ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Id, e.Value.Points, e.Value.Color);
+            };
+
+            _paintControl.FigureRemoved += (s, e) =>
+            {
+                ClientWebSocketConnection.PaintDeleteFigureCommand(ConferenceId, e.Value);
             };
         }
 
@@ -197,7 +204,15 @@ namespace Polymedia.PolyJoin.Client
         {
             Invoke(new Action(() => 
             {
-                _paintControl.AddFigure(e.Value.Points, e.Value.Color);
+                _paintControl.AddFigure(e.Value.FigureId, e.Value.Points, e.Value.Color);
+            }));
+        }
+
+        private void ClientWebSocketConnectionPaintDeleteFigureCommandRecieved(object sender, SimpleEventArgs<PaintDeleteFigureCommand> e)
+        {
+            Invoke(new Action(() =>
+            {
+                _paintControl.RemoveFigure(e.Value.FigureId);
             }));
         }
 

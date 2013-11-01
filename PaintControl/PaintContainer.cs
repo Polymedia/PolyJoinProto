@@ -11,10 +11,9 @@ namespace Painter
     {
         private int _imageWidth;
         private int _imageHeight;
-        private Dictionary<int, Figure> _figuresDictionary;
+        private List<Figure> _figures;
         private Bitmap _image;
-        int _lastFigureId = 0;
-
+        
         public PaintContainer(int width, int height)
         {
             Init(width, height);
@@ -24,7 +23,7 @@ namespace Painter
         {
             _imageWidth = width;
             _imageHeight = height;
-            _figuresDictionary = new Dictionary<int, Figure>();
+            _figures = new List<Figure>();
 
             _image = new Bitmap(_imageWidth, _imageHeight);
         }
@@ -38,24 +37,29 @@ namespace Painter
             }
         }
 
-        public int AddFigure(List<Point> figurePoints, Color color)
+        public void AddFigure(string id, List<Point> figurePoints, Color color)
         {
             var f = new Figure
             {
+                Id=id,
                 Points = figurePoints,
                 Color = color
             };
 
-            _lastFigureId++;
-            _figuresDictionary.Add(_lastFigureId, f);
+            _figures.Add(f);
 
             RenderFigure(f);
-            return _lastFigureId;
         }
 
-        public void AddPointToFogure(Point p, int figureId)
+        public void AddPointToFigure(Point p, string figureId)
         {
-            var f = _figuresDictionary[figureId];
+            var figures = _figures.Where(F => F.Id == figureId).ToList();
+
+            if (figures.Count == 0)
+                return;
+
+            var f = figures.First();
+
             if (f.Points.Count == 0)
             {
                 f.Points.Add(p);
@@ -75,30 +79,43 @@ namespace Painter
             }
         }
 
-        public int RemoveFigure(double x, double y)
+        public string RemoveFigure(double x, double y)
         {
-            foreach (var f in _figuresDictionary)
+            foreach (var f in _figures)
             {
-                for (int i = 0; i < f.Value.Points.Count - 1; i++)
+                for (int i = 0; i < f.Points.Count - 1; i++)
                 {
-                    if (PointCloseToSegment(x, y, f.Value.Points[i].X, f.Value.Points[i].Y, f.Value.Points[i + 1].X, f.Value.Points[i + 1].Y))
+                    if (PointCloseToSegment(x, y, f.Points[i].X, f.Points[i].Y, f.Points[i + 1].X, f.Points[i + 1].Y))
                     {
-                        var id = f.Key;
-                        _figuresDictionary.Remove(id);
-                        _image = new Bitmap(_imageWidth, _imageHeight);
-                        RenderFigures();
-                        return id;
+                        var id = f.Id;
+                        return RemoveFigure(id);
                     }
                 }
             }
-            return -1;
+            return string.Empty;
         }
 
-        public Figure GetFigureById(int id)
+        public string RemoveFigure(string id)
         {
-            if (_figuresDictionary.ContainsKey(id))
-                return _figuresDictionary[id];
-            return null;
+            var figures = _figures.Where(f => f.Id==id).ToList();
+            if (figures.Count()>0)
+            {
+                foreach(var f in figures)
+                _figures.Remove(f);
+                _image = new Bitmap(_imageWidth, _imageHeight);
+                RenderFigures();
+                return id;
+            }
+            return string.Empty;
+        }
+
+        public Figure GetFigureById(string id)
+        {
+            var figs = _figures.Where(f => f.Id.Equals(id)).ToList();
+            if (figs.Count()>0)
+            {
+                return figs.First();
+            } return null;
         }
 
         private bool PointCloseToSegment(double pointX, double pointY, double x1, double y1, double x2, double y2)
@@ -150,9 +167,9 @@ namespace Painter
         
         private void RenderFigures()
         {
-            foreach (var f in _figuresDictionary)
+            foreach (var f in _figures)
             {
-                RenderFigure(f.Value);
+                RenderFigure(f);
             }
         }
 

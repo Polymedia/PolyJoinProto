@@ -10,10 +10,11 @@ namespace Painter
     interface IPaintContainer
     {
         Bitmap Image { get; }
-        int AddFigure(List<Point> figurePoints, Color color);
-        void AddPointToFogure(Point p, int figureId);
-        int RemoveFigure(double x, double y);
-        Figure GetFigureById(int id);
+        void AddFigure(string id, List<Point> figurePoints, Color color);
+        void AddPointToFigure(Point p, string figureId);
+        string RemoveFigure(double x, double y);
+        string RemoveFigure(string id);
+        Figure GetFigureById(string id);
         double GetLineThickness();
     }
 }

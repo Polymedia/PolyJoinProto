@@ -23,6 +23,7 @@ namespace Polymedia.PolyJoin.Server
             ConnectionManager.GetStateCommandReceived += ConnectionManagerOnGetStateCommandReceived;
             ConnectionManager.DiffCommandReceived += ConnectionManagerOnDiffCommandReceived;
             ConnectionManager.PaintAddFigureCommandRecieved+=ConnectionManagerPaintAddFigureCommandRecieved;
+            ConnectionManager.PaintDeleteFigureCommandRecieved += ConnectionManagerPaintDelteFigureCommandRecieved;
 
             Thread thread = new Thread(() => { 
                 while(true)
@@ -157,7 +158,22 @@ namespace Polymedia.PolyJoin.Server
                     foreach (var connection in conference.Connections)
                     {
                         if (command.SenderConnection != connection)
-                            connection.PaintAddFigureCommand(conference.Id, addFigureCommand.Points, addFigureCommand.Color);
+                            connection.PaintAddFigureCommand(conference.Id, addFigureCommand.FigureId, addFigureCommand.Points, addFigureCommand.Color);
+                    }
+                }
+                else if (command is PaintDeleteFigureCommand)
+                {
+                    var deleteFigureCommand = command as PaintDeleteFigureCommand;
+
+                    Conference conference = conferences[deleteFigureCommand.ConferenceId];
+
+                    if (conference == null)
+                        return;
+
+                    foreach (var connection in conference.Connections)
+                    {
+                        if (command.SenderConnection != connection)
+                            connection.PaintDeleteFigureCommand(conference.Id, deleteFigureCommand.FigureId);
                     }
                 }
             }
@@ -174,6 +190,11 @@ namespace Polymedia.PolyJoin.Server
         }
 
         private static void ConnectionManagerPaintAddFigureCommandRecieved(object sender, SimpleEventArgs<PaintAddFigureCommand> e)
+        {
+            queue.Enqueue(e.Value);
+        }
+
+        private static void ConnectionManagerPaintDelteFigureCommandRecieved(object sender, SimpleEventArgs<PaintDeleteFigureCommand> e)
         {
             queue.Enqueue(e.Value);
         }
