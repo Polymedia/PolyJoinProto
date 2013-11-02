@@ -33,18 +33,23 @@
             this.connectionStateValueLabel = new System.Windows.Forms.Label();
             this.connectionStateLabel = new System.Windows.Forms.Label();
             this.leftPanel = new System.Windows.Forms.Panel();
+            this.modeGroupBox = new System.Windows.Forms.GroupBox();
+            this.inputRadioButton = new System.Windows.Forms.RadioButton();
+            this.drawRadioButton = new System.Windows.Forms.RadioButton();
+            this.silentRadioButton = new System.Windows.Forms.RadioButton();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.roleValueLabel = new System.Windows.Forms.Label();
-            this.roleLabel = new System.Windows.Forms.Label();
-            this.conferenceIdValueLabel = new System.Windows.Forms.Label();
-            this.conferenceIdlabel = new System.Windows.Forms.Label();
             this.IdColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IsPresenterColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.ColorColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.roleValueLabel = new System.Windows.Forms.Label();
+            this.roleLabel = new System.Windows.Forms.Label();
+            this.conferenceIdValueLabel = new System.Windows.Forms.Label();
+            this.conferenceIdlabel = new System.Windows.Forms.Label();
             this.tableLayoutPanel.SuspendLayout();
             this.topPanel.SuspendLayout();
             this.leftPanel.SuspendLayout();
+            this.modeGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -97,6 +102,7 @@
             // 
             // leftPanel
             // 
+            this.leftPanel.Controls.Add(this.modeGroupBox);
             this.leftPanel.Controls.Add(this.dataGridView);
             this.leftPanel.Controls.Add(this.roleValueLabel);
             this.leftPanel.Controls.Add(this.roleLabel);
@@ -104,9 +110,54 @@
             this.leftPanel.Controls.Add(this.conferenceIdlabel);
             this.leftPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.leftPanel.Location = new System.Drawing.Point(3, 42);
+            this.leftPanel.MinimumSize = new System.Drawing.Size(0, 460);
             this.leftPanel.Name = "leftPanel";
             this.leftPanel.Size = new System.Drawing.Size(294, 460);
             this.leftPanel.TabIndex = 2;
+            // 
+            // modeGroupBox
+            // 
+            this.modeGroupBox.Controls.Add(this.inputRadioButton);
+            this.modeGroupBox.Controls.Add(this.drawRadioButton);
+            this.modeGroupBox.Controls.Add(this.silentRadioButton);
+            this.modeGroupBox.Location = new System.Drawing.Point(12, 52);
+            this.modeGroupBox.Name = "modeGroupBox";
+            this.modeGroupBox.Size = new System.Drawing.Size(270, 90);
+            this.modeGroupBox.TabIndex = 9;
+            this.modeGroupBox.TabStop = false;
+            this.modeGroupBox.Text = "Mode";
+            // 
+            // inputRadioButton
+            // 
+            this.inputRadioButton.AutoSize = true;
+            this.inputRadioButton.Location = new System.Drawing.Point(8, 65);
+            this.inputRadioButton.Name = "inputRadioButton";
+            this.inputRadioButton.Size = new System.Drawing.Size(49, 17);
+            this.inputRadioButton.TabIndex = 2;
+            this.inputRadioButton.Text = "Input";
+            this.inputRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // drawRadioButton
+            // 
+            this.drawRadioButton.AutoSize = true;
+            this.drawRadioButton.Location = new System.Drawing.Point(8, 42);
+            this.drawRadioButton.Name = "drawRadioButton";
+            this.drawRadioButton.Size = new System.Drawing.Size(50, 17);
+            this.drawRadioButton.TabIndex = 1;
+            this.drawRadioButton.Text = "Draw";
+            this.drawRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // silentRadioButton
+            // 
+            this.silentRadioButton.AutoSize = true;
+            this.silentRadioButton.Checked = true;
+            this.silentRadioButton.Location = new System.Drawing.Point(8, 19);
+            this.silentRadioButton.Name = "silentRadioButton";
+            this.silentRadioButton.Size = new System.Drawing.Size(51, 17);
+            this.silentRadioButton.TabIndex = 0;
+            this.silentRadioButton.TabStop = true;
+            this.silentRadioButton.Text = "Silent";
+            this.silentRadioButton.UseVisualStyleBackColor = true;
             // 
             // dataGridView
             // 
@@ -122,29 +173,12 @@
             this.IsPresenterColumn,
             this.ColorColumn});
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.dataGridView.Location = new System.Drawing.Point(0, 52);
+            this.dataGridView.Location = new System.Drawing.Point(0, 148);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.ReadOnly = true;
             this.dataGridView.RowHeadersVisible = false;
-            this.dataGridView.Size = new System.Drawing.Size(294, 408);
+            this.dataGridView.Size = new System.Drawing.Size(294, 312);
             this.dataGridView.TabIndex = 8;
-            // 
-            // roleValueLabel
-            // 
-            this.roleValueLabel.AutoSize = true;
-            this.roleValueLabel.Location = new System.Drawing.Point(105, 36);
-            this.roleValueLabel.Name = "roleValueLabel";
-            this.roleValueLabel.Size = new System.Drawing.Size(0, 13);
-            this.roleValueLabel.TabIndex = 7;
-            // 
-            // roleLabel
-            // 
-            this.roleLabel.AutoSize = true;
-            this.roleLabel.Location = new System.Drawing.Point(9, 36);
-            this.roleLabel.Name = "roleLabel";
-            this.roleLabel.Size = new System.Drawing.Size(32, 13);
-            this.roleLabel.TabIndex = 6;
-            this.roleLabel.Text = "Role:";
             // 
             // IdColumn
             // 
@@ -178,6 +212,23 @@
             this.ColorColumn.ReadOnly = true;
             this.ColorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
+            // roleValueLabel
+            // 
+            this.roleValueLabel.AutoSize = true;
+            this.roleValueLabel.Location = new System.Drawing.Point(105, 36);
+            this.roleValueLabel.Name = "roleValueLabel";
+            this.roleValueLabel.Size = new System.Drawing.Size(0, 13);
+            this.roleValueLabel.TabIndex = 7;
+            // 
+            // roleLabel
+            // 
+            this.roleLabel.AutoSize = true;
+            this.roleLabel.Location = new System.Drawing.Point(9, 36);
+            this.roleLabel.Name = "roleLabel";
+            this.roleLabel.Size = new System.Drawing.Size(32, 13);
+            this.roleLabel.TabIndex = 6;
+            this.roleLabel.Text = "Role:";
+            // 
             // conferenceIdValueLabel
             // 
             this.conferenceIdValueLabel.AutoSize = true;
@@ -209,6 +260,8 @@
             this.topPanel.PerformLayout();
             this.leftPanel.ResumeLayout(false);
             this.leftPanel.PerformLayout();
+            this.modeGroupBox.ResumeLayout(false);
+            this.modeGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);
 
@@ -230,6 +283,10 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn NameColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn IsPresenterColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColorColumn;
+        private System.Windows.Forms.GroupBox modeGroupBox;
+        private System.Windows.Forms.RadioButton inputRadioButton;
+        private System.Windows.Forms.RadioButton drawRadioButton;
+        private System.Windows.Forms.RadioButton silentRadioButton;
 
     }
 }
