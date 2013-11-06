@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Common.Commands;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 using System.Drawing;
 
-namespace Polymedia.PolyJoin.Server
+namespace Server
 {
     public class ServerWebSocketConnection: ConnectionWrapper
     {
@@ -18,7 +16,7 @@ namespace Polymedia.PolyJoin.Server
         public event EventHandler<SimpleEventArgs<PaintDeleteFigureCommand>> PaintDeleteFigureCommandRecieved = delegate { };
 
         public string Id = Guid.NewGuid().ToString();
-        public string Name = string.Empty;
+        public string ClientName = string.Empty;
         public int BrushArgb = 0;
 
         public ServerWebSocketConnection(IWebSocketConnection webSocketConnection) : base(webSocketConnection)

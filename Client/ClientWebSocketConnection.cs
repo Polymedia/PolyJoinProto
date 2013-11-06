@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Common.Commands;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 using System.Drawing;
@@ -22,9 +23,9 @@ namespace Polymedia.PolyJoin.Client
         {
         }
 
-        public void QueryState(string conferenceId, int width, int height)
+        public void QueryState(string conferenceId, int width, int height, string name)
         {
-            Command command = new QueryStateCommand(conferenceId, width, height);
+            Command command = new QueryStateCommand(conferenceId, width, height, name);
             SendCommand(command);
         }
 

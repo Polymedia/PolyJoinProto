@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Common.Commands;
 using Polymedia.PolyJoin.Common;
-using DifferenceLib;
 
-namespace Polymedia.PolyJoin.Server
+namespace Server
 {
     class ConnectionManager //to singleton
     {

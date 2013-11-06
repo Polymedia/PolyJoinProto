@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DifferenceLib;
+using Polymedia.PolyJoin.Client;
 using Polymedia.PolyJoin.Common;
 using Painter;
 
-namespace Polymedia.PolyJoin.Client
+namespace Client
 {
     public partial class MainForm : Form
     {
@@ -46,6 +43,7 @@ namespace Polymedia.PolyJoin.Client
         public int ScreenshotTimeout { get; set; }
 
         public string ConferenceId { get; set; }
+        public string ClientName { get; set; }
 
         private bool _isPresenter;
         private int _presenterWidth;
@@ -222,7 +220,7 @@ namespace Polymedia.PolyJoin.Client
                     {
                         connectionStateValueLabel.Text = "Connected";
 
-                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(SystemInformation.VirtualScreen.Width * ScreenshotScale), (int)(SystemInformation.VirtualScreen.Height * ScreenshotScale));
+                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(SystemInformation.VirtualScreen.Width * ScreenshotScale), (int)(SystemInformation.VirtualScreen.Height * ScreenshotScale), ClientName);
                     }
                     else
                     {

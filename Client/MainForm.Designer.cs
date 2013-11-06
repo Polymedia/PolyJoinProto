@@ -1,4 +1,4 @@
-﻿namespace Polymedia.PolyJoin.Client
+﻿namespace Client
 {
     partial class MainForm
     {

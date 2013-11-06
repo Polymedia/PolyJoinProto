@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Polymedia.PolyJoin.Client
+namespace Client
 {
     public partial class ConnectForm : Form
     {
@@ -27,14 +21,17 @@ namespace Polymedia.PolyJoin.Client
             RadioButtonOnCheckedChanged(null, null);
         }
 
-        
-
         public string ServerIp
         {
             get { return serverIPTextBox.Text; }
             set { serverIPTextBox.Text = value; }
         }
         public string ConferenceId { get; set; }
+        public string ClientName
+        {
+            get { return nameTextBox.Text; }
+            set { nameTextBox.Text = value; }
+        }
 
         private void RadioButtonOnCheckedChanged(object sender, EventArgs eventArgs)
         {
