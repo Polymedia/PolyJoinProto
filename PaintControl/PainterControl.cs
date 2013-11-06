@@ -67,7 +67,15 @@ namespace Painter
             }
         }
 
-        public PaintControlModes Mode { get; set; }
+        private PaintControlModes _mode;
+        public PaintControlModes Mode
+        {
+            get { return _mode; }
+            set
+            {
+                _mode = value;
+            }
+        }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -180,6 +188,7 @@ namespace Painter
     {
         Silent,
         Draw,
-        Input
+        Input,
+        DrawFullScreen
     }
 }
