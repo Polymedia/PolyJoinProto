@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Common.Commands;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 using System.Drawing;
@@ -13,6 +14,7 @@ namespace Polymedia.PolyJoin.Client
         public event EventHandler<SimpleEventArgs<ParticipantsCommand>> ParticipantsCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<StateCommand>> StateCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
+        public event EventHandler<SimpleEventArgs<InputCommand>> InputCommandReceived = delegate { }; 
         public event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
         public event EventHandler<SimpleEventArgs<PaintDeleteFigureCommand>> PaintDeleteFigureCommandRecieved = delegate { };
         
@@ -21,9 +23,9 @@ namespace Polymedia.PolyJoin.Client
         {
         }
 
-        public void QueryState(string conferenceId, int width, int height)
+        public void QueryState(string conferenceId, int width, int height, string name)
         {
-            Command command = new QueryStateCommand(conferenceId, width, height);
+            Command command = new QueryStateCommand(conferenceId, width, height, name);
             SendCommand(command);
         }
 
@@ -34,11 +36,10 @@ namespace Polymedia.PolyJoin.Client
             SendCommand(command);
         }
 
-        public void SendInput(string conferenceId, int mouseX, int mouseY)
+        public void SendInput(string conferenceId, MouseInput mouseInput)
         {
             InputCommand command = new InputCommand(conferenceId);
-            command.MouseX = mouseX;
-            command.MouseY = mouseY;
+            command.MouseInput = mouseInput;
             SendCommand(command);
         }
         
@@ -73,6 +74,10 @@ namespace Polymedia.PolyJoin.Client
                 case CommandName.Participants:
                     Console.WriteLine("Command Participants");
                     ParticipantsCommandReceived.Invoke(this, new SimpleEventArgs<ParticipantsCommand>() { Value = (ParticipantsCommand)command });
+                    break;
+                case CommandName.Input:
+                    Console.WriteLine("Command Input");
+                    InputCommandReceived.Invoke(this, new SimpleEventArgs<InputCommand>((InputCommand)command));
                     break;
                 case CommandName.PaintAddFigure:
                     Console.WriteLine("Command PaintAddFigure");
