@@ -180,7 +180,7 @@ namespace Server
                 {
                     InputCommand inputCommand = command as InputCommand;
 
-                    Conference conference = conferences[inputCommand.ConferenceId];
+                    Conference conference = Conferences[inputCommand.ConferenceId];
 
                     if (conference == null)
                         return;
@@ -192,7 +192,7 @@ namespace Server
 
         private static void ConnectionManagerOnInputCommandReceived(object sender, SimpleEventArgs<InputCommand> simpleEventArgs)
         {
-            queue.Enqueue(simpleEventArgs.Value);
+            Queue.Enqueue(simpleEventArgs.Value);
         }
 
         private static void ConnectionManagerOnGetStateCommandReceived(object sender, SimpleEventArgs<QueryStateCommand> connectionEventArgs)
