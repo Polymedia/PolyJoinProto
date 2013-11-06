@@ -22,6 +22,7 @@ namespace Polymedia.PolyJoin.Server
         {
             ConnectionManager.GetStateCommandReceived += ConnectionManagerOnGetStateCommandReceived;
             ConnectionManager.DiffCommandReceived += ConnectionManagerOnDiffCommandReceived;
+            ConnectionManager.InputCommandReceived += ConnectionManagerOnInputCommandReceived;
             ConnectionManager.PaintAddFigureCommandRecieved+=ConnectionManagerPaintAddFigureCommandRecieved;
             ConnectionManager.PaintDeleteFigureCommandRecieved += ConnectionManagerPaintDelteFigureCommandRecieved;
 
@@ -175,8 +176,23 @@ namespace Polymedia.PolyJoin.Server
                         if (command.SenderConnection != connection)
                             connection.PaintDeleteFigureCommand(conference.Id, deleteFigureCommand.FigureId);
                     }
+                }else if (command is InputCommand)
+                {
+                    InputCommand inputCommand = command as InputCommand;
+
+                    Conference conference = conferences[inputCommand.ConferenceId];
+
+                    if (conference == null)
+                        return;
+
+                    conference.PresenterConnection.SendInput(conference.Id, inputCommand.MouseInput);
                 }
             }
+        }
+
+        private static void ConnectionManagerOnInputCommandReceived(object sender, SimpleEventArgs<InputCommand> simpleEventArgs)
+        {
+            queue.Enqueue(simpleEventArgs.Value);
         }
 
         private static void ConnectionManagerOnGetStateCommandReceived(object sender, SimpleEventArgs<QueryStateCommand> connectionEventArgs)

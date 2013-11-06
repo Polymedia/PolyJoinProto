@@ -35,6 +35,7 @@ namespace Polymedia.PolyJoin.Client
                 _clientWebSocketConnection.StateCommandReceived += ClientWebSocketConnectionOnStateCommandReceived;
                 _clientWebSocketConnection.DiffCommandReceived += ClientWebSocketConnectionOnDiffCommandReceived;
                 _clientWebSocketConnection.ParticipantsCommandReceived += ClientWebSocketConnectionOnParticipantsCommandReceived;
+                _clientWebSocketConnection.InputCommandReceived += ClientWebSocketConnectionOnInputCommandReceived;
                 _clientWebSocketConnection.PaintAddFigureCommandRecieved += ClientWebSocketConnectionPaintAddFigureCommandRecieved;
                 _clientWebSocketConnection.PaintDeleteFigureCommandRecieved += ClientWebSocketConnectionPaintDeleteFigureCommandRecieved;
             }
@@ -107,7 +108,10 @@ namespace Polymedia.PolyJoin.Client
                         conferenceIdValueLabel.Text = string.Empty;
                         _paintControl.Image = null;
                         roleValueLabel.Text = string.Empty;
+
                         _paintControl.Mode = PaintControlModes.Silent;
+                        silentRadioButton.Checked = true;
+
                         modeGroupBox.Enabled = false;
 
                         dataGridView.DataSource = null;
@@ -128,6 +132,29 @@ namespace Polymedia.PolyJoin.Client
             inputRadioButton.CheckedChanged += RadioButtonOnCheckedChanged;
         }
 
+        private void InitPaintControl()
+        {
+            _paintControl = new PainterControl();
+            tableLayoutPanel.Controls.Add(_paintControl, 1, 1);
+            _paintControl.Dock = DockStyle.Fill;
+
+            _paintControl.FigureAdded += (s, e) =>
+            {
+                ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Id, e.Value.Points,
+                                                                e.Value.Color);
+            };
+
+            _paintControl.FigureRemoved += (s, e) =>
+            {
+                ClientWebSocketConnection.PaintDeleteFigureCommand(ConferenceId, e.Value);
+            };
+
+            _paintControl.MouseInputed += (sender, args) =>
+            {
+                ClientWebSocketConnection.SendInput(ConferenceId, args.Value);
+            };
+        }
+
         private void RadioButtonOnCheckedChanged(object sender, EventArgs eventArgs)
         {
             if(silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
@@ -140,21 +167,9 @@ namespace Polymedia.PolyJoin.Client
             _queue.Enqueue(simpleEventArgs.Value);
         }
 
-        private void InitPaintControl()
+        private void ClientWebSocketConnectionOnInputCommandReceived(object sender, SimpleEventArgs<InputCommand> simpleEventArgs)
         {
-            _paintControl = new PainterControl();
-            tableLayoutPanel.Controls.Add(_paintControl, 1, 1);
-            _paintControl.Dock = DockStyle.Fill;
-
-            _paintControl.FigureAdded += (s, e) =>
-            {
-                ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Id, e.Value.Points, e.Value.Color);
-            };
-
-            _paintControl.FigureRemoved += (s, e) =>
-            {
-                ClientWebSocketConnection.PaintDeleteFigureCommand(ConferenceId, e.Value);
-            };
+            _queue.Enqueue(simpleEventArgs.Value);
         }
 
         private void ClientWebSocketConnectionOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> simpleEventArgs)
@@ -207,7 +222,7 @@ namespace Polymedia.PolyJoin.Client
                     {
                         connectionStateValueLabel.Text = "Connected";
 
-                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(Screen.PrimaryScreen.Bounds.Width * ScreenshotScale), (int)(Screen.PrimaryScreen.Bounds.Height * ScreenshotScale));
+                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(SystemInformation.VirtualScreen.Width * ScreenshotScale), (int)(SystemInformation.VirtualScreen.Height * ScreenshotScale));
                     }
                     else
                     {
@@ -256,18 +271,26 @@ namespace Polymedia.PolyJoin.Client
                                 DiffCommand diffCommand = command  as DiffCommand;
                                 ProcessDiffCommand(diffCommand);
                                 draw = true;
-                            }else if (command is ParticipantsCommand)
+                            }
+                            else if (command is ParticipantsCommand)
                             {
                                 ParticipantsCommand participantsCommand = command as ParticipantsCommand;
                                 ProcessParticipantsCommand(participantsCommand);
-                            }else if (command is PaintAddFigureCommand)
+                            }
+                            else if (command is InputCommand)
+                            {
+                                InputCommand inputCommand = command as InputCommand;
+                                ProcessInputCommand(inputCommand);
+                            }
+                            else if (command is PaintAddFigureCommand)
                             {
                                 PaintAddFigureCommand paintAddFigureCommand = command as PaintAddFigureCommand;
                                 ProcessPaintAddFigureCommand(paintAddFigureCommand);
-                            }else if (command is PaintDeleteFigureCommand)
+                            }
+                            else if (command is PaintDeleteFigureCommand)
                             {
                                 PaintDeleteFigureCommand paintDeleteFigureCommand =
-                                            command as PaintDeleteFigureCommand;
+                                    command as PaintDeleteFigureCommand;
                                 ProcessPaintDeleteFigureCommand(paintDeleteFigureCommand);
                             }
                         }
@@ -329,6 +352,42 @@ namespace Polymedia.PolyJoin.Client
                 }));
         }
 
+        private void ProcessInputCommand(InputCommand inputCommand)
+        {
+            if (inputCommand.MouseInput != null)
+            {
+                MouseInput mouseInput = inputCommand.MouseInput;
+                int x = (int) (mouseInput.X/ScreenshotScale);
+                int y = (int) (mouseInput.Y/ScreenshotScale);
+                switch (mouseInput.MouseInputType)
+                {
+                    case MouseInput.MouseInputEnum.Move:
+                        MouseAPI.Move(x, y);
+                        break;
+                    case MouseInput.MouseInputEnum.Down:
+                        if (mouseInput.LeftButton)
+                            MouseAPI.LeftButtonDown(x, y);
+                        else
+                            MouseAPI.RightButtonDown(x, y);
+                        break;
+                    case MouseInput.MouseInputEnum.Up:
+                        if (mouseInput.LeftButton)
+                            MouseAPI.LeftButtonUp(x, y);
+                        else
+                            MouseAPI.RightButtonUp(x, y);
+                        break;
+                    case MouseInput.MouseInputEnum.Click:
+                        if (mouseInput.LeftButton)
+                            MouseAPI.LeftButtonClick(x, y);
+                        else
+                            MouseAPI.RightButtonClick(x, y);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         private void ProcessPaintAddFigureCommand(PaintAddFigureCommand paintAddFigureCommand)
         {
             Invoke(new Action(() =>
@@ -363,22 +422,22 @@ namespace Polymedia.PolyJoin.Client
                 {
                     try
                     {
-                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
-                                                       Screen.PrimaryScreen.Bounds.Height);
+                        Bitmap screenShot = new Bitmap(SystemInformation.VirtualScreen.Width,
+                                                       SystemInformation.VirtualScreen.Height);
 
                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
                         {
                             screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
                                                               new Size(
-                                                                  Screen.PrimaryScreen.Bounds.Width,
-                                                                  Screen.PrimaryScreen.Bounds.Height));
+                                                                  SystemInformation.VirtualScreen.Width,
+                                                                  SystemInformation.VirtualScreen.Height));
 
                             if (Math.Abs(ScreenshotScale - 1) > 0.01)
                                 screenShot = new Bitmap(screenShot,
                                                         (int)
-                                                        (Screen.PrimaryScreen.Bounds.Width * ScreenshotScale),
+                                                        (SystemInformation.VirtualScreen.Width * ScreenshotScale),
                                                         (int)
-                                                        (Screen.PrimaryScreen.Bounds.Height * ScreenshotScale));
+                                                        (SystemInformation.VirtualScreen.Height * ScreenshotScale));
                         }
                         DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
 

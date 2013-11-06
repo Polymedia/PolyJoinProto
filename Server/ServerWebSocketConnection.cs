@@ -13,6 +13,7 @@ namespace Polymedia.PolyJoin.Server
     {
         public event EventHandler<SimpleEventArgs<QueryStateCommand>> GetStateCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<DiffCommand>> DiffCommandReceived = delegate { };
+        public event EventHandler<SimpleEventArgs<InputCommand>> InputCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
         public event EventHandler<SimpleEventArgs<PaintDeleteFigureCommand>> PaintDeleteFigureCommandRecieved = delegate { };
 
@@ -48,6 +49,15 @@ namespace Polymedia.PolyJoin.Server
             SendCommand(command);
         }
 
+        public void SendInput(string conferenceId, MouseInput mouseInput)
+        {
+            Command command = new InputCommand(conferenceId)
+                {
+                    MouseInput = mouseInput
+                };
+            SendCommand(command);
+        }
+
         public void PaintAddFigureCommand(string conferenceId, string figureId, List<Point> points, Color color)
         {
             Command command = new PaintAddFigureCommand(conferenceId, figureId, points, color);
@@ -73,6 +83,10 @@ namespace Polymedia.PolyJoin.Server
                 case CommandName.Diff:
                     Console.WriteLine("Command Diff");
                     DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand>() { Value = (DiffCommand)command });
+                    break;
+                case CommandName.Input:
+                    Console.WriteLine("Command Input");
+                    InputCommandReceived.Invoke(this, new SimpleEventArgs<InputCommand>() { Value = (InputCommand)command });
                     break;
                 case CommandName.PaintAddFigure:
                     Console.WriteLine("Command PaintAddFigure");

@@ -53,9 +53,11 @@ namespace Painter
             FillPictureBox();
         }
 
-        public event EventHandler<SimpleEventArgs<Figure>> FigureAdded;
+        public event EventHandler<SimpleEventArgs<Figure>> FigureAdded = delegate { };
 
-        public event EventHandler<SimpleEventArgs<string>> FigureRemoved;
+        public event EventHandler<SimpleEventArgs<string>> FigureRemoved = delegate { };
+
+        public event EventHandler<SimpleEventArgs<MouseInput>> MouseInputed = delegate { }; 
 
         public Color Color { get; set; }
 
@@ -79,6 +81,14 @@ namespace Painter
                 _mouseButtonDown = true;
                 _currentFigureId = Guid.NewGuid().ToString();
                 _painter.AddFigure(_currentFigureId, new List<Point>(), Color);
+
+                return;
+            }
+
+            if (Mode == PaintControlModes.Input)
+            {
+                FireMouseInputed(e, MouseInput.MouseInputEnum.Down);
+                return;
             }
         }
 
@@ -93,6 +103,14 @@ namespace Painter
 
                 _currentFigureId = string.Empty;
                 FillPictureBox();
+
+                return;
+            }
+
+            if (Mode == PaintControlModes.Input)
+            {
+                FireMouseInputed(e, MouseInput.MouseInputEnum.Up);
+                return;
             }
         }
 
@@ -112,6 +130,13 @@ namespace Painter
                         FillPictureBox();
                     }
                 }
+                return;
+            }
+
+            if (Mode == PaintControlModes.Input)
+            {
+                FireMouseInputed(e, MouseInput.MouseInputEnum.Move);
+                return;
             }
         }
 
@@ -132,6 +157,13 @@ namespace Painter
 
                     FillPictureBox();
                 }
+                return;
+            }
+
+            if (Mode == PaintControlModes.Input)
+            {
+                FireMouseInputed(e, MouseInput.MouseInputEnum.Click);
+                return;
             }
         }
 
@@ -169,10 +201,32 @@ namespace Painter
 
         private void FillPictureBox()
         {
-            Bitmap newImage = new Bitmap(pictureBox.Width, pictureBox.Height);
-            Graphics g = Graphics.FromImage(newImage);
-            g.DrawImage(_painter.Image, 0, 0, pictureBox.Width, pictureBox.Height);
-            pictureBox.Image = newImage;
+            try
+            {
+                Bitmap newImage = new Bitmap(pictureBox.Width, pictureBox.Height);
+                Graphics g = Graphics.FromImage(newImage);
+                g.DrawImage(_painter.Image, 0, 0, pictureBox.Width, pictureBox.Height);
+                pictureBox.Image = newImage;
+            }
+            catch
+            {
+            }
+        }
+
+        private void FireMouseInputed(MouseEventArgs args, MouseInput.MouseInputEnum mouseInputEnum)
+        {
+            MouseInput mouseInput = new MouseInput()
+            {
+                MouseInputType = mouseInputEnum,
+                LeftButton = args.Button == MouseButtons.Left,
+                RightButton = args.Button == MouseButtons.Right,
+                X = (int)(_imageWidth/ (float)pictureBox.Width * args.X),
+                Y = (int)(_imageHeight / (float)pictureBox.Height * args.Y)
+            };
+
+
+
+            MouseInputed.Invoke(this, new SimpleEventArgs<MouseInput>(mouseInput));
         }
     }
 
