@@ -20,11 +20,23 @@ namespace Painter
         int _imageWidth = 1;
         int _imageHeight = 1;
         DateTime _lastPointTime = DateTime.Now;
+        private FullScreenForm _fullScreenForm;
 
         public PainterControl()
         {
             InitializeComponent();
-            
+
+            _fullScreenForm = new FullScreenForm();
+            _fullScreenForm.FullScreenMouseDown += pictureBox_MouseDown;
+            _fullScreenForm.FullScreenMouseMove += pictureBox_MouseMove;
+            _fullScreenForm.FullScreenMouseUp += pictureBox_MouseUp;
+            _fullScreenForm.FullScreenMouseClick += pictureBox_MouseClick;
+            _fullScreenForm.Escaped += (s, e) =>
+                {
+                    Mode = PaintControlModes.Silent;
+                    if (FullScreenCanceled != null) FullScreenCanceled.Invoke(this, new EventArgs());
+                };
+
             Mode = PaintControlModes.Silent;
 
             Init(_imageWidth, _imageHeight, Color.Black);
@@ -57,7 +69,9 @@ namespace Painter
 
         public event EventHandler<SimpleEventArgs<string>> FigureRemoved = delegate { };
 
-        public event EventHandler<SimpleEventArgs<MouseInput>> MouseInputed = delegate { }; 
+        public event EventHandler<SimpleEventArgs<MouseInput>> MouseInputed = delegate { };
+
+        public event EventHandler FullScreenCanceled = delegate { };
 
         public Color Color { get; set; }
 
@@ -76,12 +90,23 @@ namespace Painter
             set
             {
                 _mode = value;
+                if (_mode == PaintControlModes.DrawFullScreen)
+                {
+                    _fullScreenForm.Show();
+                    _fullScreenForm.Location = SystemInformation.VirtualScreen.Location;
+                    FillPictureBox();
+                }
+                else
+                {
+                    _fullScreenForm.Hide();
+                    FillPictureBox();
+                }
             }
         }
 
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
-            if (Mode == PaintControlModes.Draw)
+            if (Mode == PaintControlModes.Draw || Mode == PaintControlModes.DrawFullScreen)
             {
                 if (e.Button == MouseButtons.Right)
                     return;
@@ -100,9 +125,9 @@ namespace Painter
             }
         }
 
-        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        private void pictureBox_MouseUp(object sender, MouseEventArgs e)
         {
-            if (Mode == PaintControlModes.Draw)
+            if (Mode == PaintControlModes.Draw || Mode==PaintControlModes.DrawFullScreen)
             {
                 _mouseButtonDown = false;
 
@@ -122,7 +147,7 @@ namespace Painter
             }
         }
 
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        private void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (Mode == PaintControlModes.Draw)
             {
@@ -141,6 +166,23 @@ namespace Painter
                 return;
             }
 
+            if (Mode == PaintControlModes.Draw || Mode == PaintControlModes.DrawFullScreen)
+            {
+                if (_mouseButtonDown)
+                {
+                    //int x = e.X * _imageWidth / pictureBox.Width;
+                    //int y = e.Y * _imageHeight / pictureBox.Height;
+
+                    if ((DateTime.Now - _lastPointTime).TotalMilliseconds > 50)
+                    {
+                        _lastPointTime = DateTime.Now;
+                        _painter.AddPointToFigure(e.Location, _currentFigureId);
+                        FillPictureBox();
+                    }
+                }
+                return;
+            }
+
             if (Mode == PaintControlModes.Input)
             {
                 FireMouseInputed(e, MouseInput.MouseInputEnum.Move);
@@ -148,7 +190,7 @@ namespace Painter
             }
         }
 
-        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        private void pictureBox_MouseClick(object sender, MouseEventArgs e)
         {
             if (Mode == PaintControlModes.Draw)
             {
@@ -168,6 +210,21 @@ namespace Painter
                 return;
             }
 
+            if (Mode == PaintControlModes.DrawFullScreen)
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    string removedFigureId = _painter.RemoveFigure(e.X, e.Y);
+
+                    if (!removedFigureId.Equals(string.Empty) && FigureRemoved != null)
+                    {
+                        FigureRemoved.Invoke(this, new SimpleEventArgs<string>(removedFigureId));
+                    }
+
+                    FillPictureBox();
+                }
+                return;
+            }
             if (Mode == PaintControlModes.Input)
             {
                 FireMouseInputed(e, MouseInput.MouseInputEnum.Click);
@@ -211,10 +268,20 @@ namespace Painter
         {
             try
             {
-                Bitmap newImage = new Bitmap(pictureBox.Width, pictureBox.Height);
-                Graphics g = Graphics.FromImage(newImage);
-                g.DrawImage(_painter.Image, 0, 0, pictureBox.Width, pictureBox.Height);
-                pictureBox.Image = newImage;
+                if (Mode == PaintControlModes.DrawFullScreen)
+                {
+                    Bitmap newImage = new Bitmap(_fullScreenForm.Width, _fullScreenForm.Height);
+                    Graphics g = Graphics.FromImage(newImage);
+                    g.DrawImage(_painter.Image, 0, 0, _fullScreenForm.Width, _fullScreenForm.Height);
+                    _fullScreenForm.Image = newImage;
+                }
+                else
+                {
+                    Bitmap newImage = new Bitmap(pictureBox.Width, pictureBox.Height);
+                    Graphics g = Graphics.FromImage(newImage);
+                    g.DrawImage(_painter.Image, 0, 0, pictureBox.Width, pictureBox.Height);
+                    pictureBox.Image = newImage;
+                }
             }
             catch
             {

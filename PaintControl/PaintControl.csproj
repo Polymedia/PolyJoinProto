@@ -7,7 +7,7 @@
     <ProjectGuid>{24F25647-91F5-4385-AE3E-3A04B9D12E71}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PaintControl</RootNamespace>
+    <RootNamespace>Painter</RootNamespace>
     <AssemblyName>PaintControl</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -43,6 +43,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Figure.cs" />
+    <Compile Include="FullScreeenControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FullScreeenControlForm.Designer.cs">
+      <DependentUpon>FullScreeenControlForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="FullScreenForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -60,6 +66,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="FullScreeenControlForm.resx">
+      <DependentUpon>FullScreeenControlForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FullScreenForm.resx">
       <DependentUpon>FullScreenForm.cs</DependentUpon>
     </EmbeddedResource>
