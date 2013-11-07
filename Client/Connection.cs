@@ -101,7 +101,7 @@ namespace Polymedia.PolyJoin.Client
             {
                 Debug.Assert(data.Length <= 65536, "Sending big data to server" + data.Length);
 
-                if (_startTime == default(DateTime))
+                /*if (_startTime == default(DateTime))
                     _startTime = DateTime.Now;
 
                 if (DateTime.Now.Subtract(_startTime).TotalSeconds > 3)
@@ -139,7 +139,7 @@ namespace Polymedia.PolyJoin.Client
                 else
                 {
                     _currentByteLength += data.Length;
-                }
+                }*/
 
                 _webSocket.Send(data, 0, data.Length);
             }
