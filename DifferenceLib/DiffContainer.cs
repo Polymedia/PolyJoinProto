@@ -191,8 +191,8 @@ namespace DifferenceLib
             byte[] byteArray = new byte[0];
             using (MemoryStream stream = new MemoryStream())
             {
-                //img.Save(stream, jgpEncoder, myEncoderParameters);
-                img.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                img.Save(stream, jgpEncoder, myEncoderParameters);
+                //img.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
                 stream.Close();
                 byteArray = stream.ToArray();
             }
