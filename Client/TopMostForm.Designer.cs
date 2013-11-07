@@ -1,6 +1,6 @@
-﻿namespace Painter
+﻿namespace Client
 {
-    partial class FullScreeenControlForm
+    partial class TopMostForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,26 +28,38 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.pictureBox = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.SuspendLayout();
             // 
-            // FullScreeenControlForm
+            // pictureBox
+            // 
+            this.pictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox.Name = "pictureBox";
+            this.pictureBox.Size = new System.Drawing.Size(284, 261);
+            this.pictureBox.TabIndex = 0;
+            this.pictureBox.TabStop = false;
+            // 
+            // TopMostForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.YellowGreen;
+            this.BackColor = System.Drawing.SystemColors.Info;
             this.ClientSize = new System.Drawing.Size(284, 261);
+            this.Controls.Add(this.pictureBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FullScreeenControlForm";
-            this.Opacity = 0.01D;
-            this.ShowInTaskbar = false;
-            this.Text = "FullScreeenControlForm";
+            this.Name = "TopMostForm";
+            this.Text = "TopMostForm";
             this.TopMost = true;
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FullScreeenControlForm_KeyDown);
+            this.TransparencyKey = System.Drawing.SystemColors.Info;
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
+        private System.Windows.Forms.PictureBox pictureBox;
     }
 }

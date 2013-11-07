@@ -55,11 +55,20 @@ namespace Client
 
         private PainterControl _paintControl;
 
+        private TopMostForm _topMostForm;
+
         public MainForm()
         {
             InitializeComponent();
 
             InitPaintControl();
+
+            _topMostForm = new TopMostForm();
+            _topMostForm.Done += (sender, ea) =>
+                {
+                    Focus();
+                    silentRadioButton.Checked = true;
+                };
 
             dataGridView.AutoGenerateColumns = false;
             dataGridView.SelectionChanged += (sender, ea) => dataGridView.ClearSelection();
@@ -96,6 +105,8 @@ namespace Client
                 {
                     if (!Visible)
                     {
+                        _topMostForm.Hide();
+
                         _runProcessCommandsThread = false;
                         _runDiffDetectThread = false;
                         _isPresenter = false;
@@ -160,10 +171,14 @@ namespace Client
 
         private void RadioButtonOnCheckedChanged(object sender, EventArgs eventArgs)
         {
-            if(silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
-            if (drawRadioButton.Checked) _paintControl.Mode = PaintControlModes.Draw;
+            if (silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
+            if (drawRadioButton.Checked)
+            {
+                if (_isPresenter)
+                    _topMostForm.SetClickThrough(false);
+                _paintControl.Mode = PaintControlModes.Draw;
+            }
             if (inputRadioButton.Checked) _paintControl.Mode = PaintControlModes.Input;
-            if (drawFullScreenRadioButton.Checked) _paintControl.Mode = PaintControlModes.DrawFullScreen;
         }
 
         private void ClientWebSocketConnectionOnParticipantsCommandReceived(object sender, SimpleEventArgs<ParticipantsCommand> simpleEventArgs)
@@ -201,26 +216,28 @@ namespace Client
 
                         _paintControl.Mode = PaintControlModes.Silent;
                         silentRadioButton.Checked = true;
-                        //modeGroupBox.Enabled = !_isPresenter;
+                        
                         if (_isPresenter)
                         {
                             silentRadioButton.Visible = true;
-                            drawFullScreenRadioButton.Visible = true;
-                            drawRadioButton.Visible = false;
+                            drawRadioButton.Visible = true;
                             inputRadioButton.Visible = false;
                         }
                         else
                         {
                             silentRadioButton.Visible = true;
-                            drawFullScreenRadioButton.Visible = false;
                             drawRadioButton.Visible = true;
                             inputRadioButton.Visible = true;
                         }
 
                         if (_isPresenter)
+                        {
                             StartDiffDetectThread();
-
-                        _paintControl.Init(_presenterWidth, _presenterHeight, Color.Black);
+                            _paintControl.Init(_presenterWidth, _presenterHeight, Color.Black, _topMostForm);
+                            _topMostForm.Show();
+                        }
+                        else
+                            _paintControl.Init(_presenterWidth, _presenterHeight, Color.Black, null);
 
                         conferenceIdValueLabel.Text = ConferenceId;
 
