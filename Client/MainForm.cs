@@ -110,7 +110,7 @@ namespace Client
                         _paintControl.Mode = PaintControlModes.Silent;
                         silentRadioButton.Checked = true;
 
-                        modeGroupBox.Enabled = false;
+                        //modeGroupBox.Enabled = false;
 
                         dataGridView.DataSource = null;
                     }
@@ -151,6 +151,11 @@ namespace Client
             {
                 ClientWebSocketConnection.SendInput(ConferenceId, args.Value);
             };
+
+            _paintControl.FullScreenCanceled += (s, e) =>
+                {
+                    silentRadioButton.Checked = true;
+                };
         }
 
         private void RadioButtonOnCheckedChanged(object sender, EventArgs eventArgs)
@@ -158,6 +163,7 @@ namespace Client
             if(silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
             if (drawRadioButton.Checked) _paintControl.Mode = PaintControlModes.Draw;
             if (inputRadioButton.Checked) _paintControl.Mode = PaintControlModes.Input;
+            if (drawFullScreenRadioButton.Checked) _paintControl.Mode = PaintControlModes.DrawFullScreen;
         }
 
         private void ClientWebSocketConnectionOnParticipantsCommandReceived(object sender, SimpleEventArgs<ParticipantsCommand> simpleEventArgs)
@@ -194,7 +200,22 @@ namespace Client
                         _id = stateCommand.ParticipantId;
 
                         _paintControl.Mode = PaintControlModes.Silent;
-                        modeGroupBox.Enabled = !_isPresenter;
+                        silentRadioButton.Checked = true;
+                        //modeGroupBox.Enabled = !_isPresenter;
+                        if (_isPresenter)
+                        {
+                            silentRadioButton.Visible = true;
+                            drawFullScreenRadioButton.Visible = true;
+                            drawRadioButton.Visible = false;
+                            inputRadioButton.Visible = false;
+                        }
+                        else
+                        {
+                            silentRadioButton.Visible = true;
+                            drawFullScreenRadioButton.Visible = false;
+                            drawRadioButton.Visible = true;
+                            inputRadioButton.Visible = true;
+                        }
 
                         if (_isPresenter)
                             StartDiffDetectThread();
@@ -425,7 +446,7 @@ namespace Client
 
                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
                         {
-                            screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
+                            screenShotGraphics.CopyFromScreen(SystemInformation.VirtualScreen.X, SystemInformation.VirtualScreen.Y, 0, 0,
                                                               new Size(
                                                                   SystemInformation.VirtualScreen.Width,
                                                                   SystemInformation.VirtualScreen.Height));

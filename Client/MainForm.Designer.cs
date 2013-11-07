@@ -46,6 +46,7 @@
             this.roleLabel = new System.Windows.Forms.Label();
             this.conferenceIdValueLabel = new System.Windows.Forms.Label();
             this.conferenceIdlabel = new System.Windows.Forms.Label();
+            this.drawFullScreenRadioButton = new System.Windows.Forms.RadioButton();
             this.tableLayoutPanel.SuspendLayout();
             this.topPanel.SuspendLayout();
             this.leftPanel.SuspendLayout();
@@ -117,12 +118,13 @@
             // 
             // modeGroupBox
             // 
+            this.modeGroupBox.Controls.Add(this.drawFullScreenRadioButton);
             this.modeGroupBox.Controls.Add(this.inputRadioButton);
             this.modeGroupBox.Controls.Add(this.drawRadioButton);
             this.modeGroupBox.Controls.Add(this.silentRadioButton);
             this.modeGroupBox.Location = new System.Drawing.Point(12, 52);
             this.modeGroupBox.Name = "modeGroupBox";
-            this.modeGroupBox.Size = new System.Drawing.Size(270, 90);
+            this.modeGroupBox.Size = new System.Drawing.Size(270, 112);
             this.modeGroupBox.TabIndex = 9;
             this.modeGroupBox.TabStop = false;
             this.modeGroupBox.Text = "Mode";
@@ -130,7 +132,7 @@
             // inputRadioButton
             // 
             this.inputRadioButton.AutoSize = true;
-            this.inputRadioButton.Location = new System.Drawing.Point(8, 65);
+            this.inputRadioButton.Location = new System.Drawing.Point(8, 88);
             this.inputRadioButton.Name = "inputRadioButton";
             this.inputRadioButton.Size = new System.Drawing.Size(49, 17);
             this.inputRadioButton.TabIndex = 2;
@@ -173,11 +175,11 @@
             this.IsPresenterColumn,
             this.ColorColumn});
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.dataGridView.Location = new System.Drawing.Point(0, 148);
+            this.dataGridView.Location = new System.Drawing.Point(0, 170);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.ReadOnly = true;
             this.dataGridView.RowHeadersVisible = false;
-            this.dataGridView.Size = new System.Drawing.Size(294, 312);
+            this.dataGridView.Size = new System.Drawing.Size(294, 290);
             this.dataGridView.TabIndex = 8;
             // 
             // IdColumn
@@ -246,6 +248,16 @@
             this.conferenceIdlabel.TabIndex = 4;
             this.conferenceIdlabel.Text = "Conference ID:";
             // 
+            // drawFullScreenRadioButton
+            // 
+            this.drawFullScreenRadioButton.AutoSize = true;
+            this.drawFullScreenRadioButton.Location = new System.Drawing.Point(8, 65);
+            this.drawFullScreenRadioButton.Name = "drawFullScreenRadioButton";
+            this.drawFullScreenRadioButton.Size = new System.Drawing.Size(169, 17);
+            this.drawFullScreenRadioButton.TabIndex = 3;
+            this.drawFullScreenRadioButton.Text = "Draw full screen (Esc to leave)";
+            this.drawFullScreenRadioButton.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -287,6 +299,7 @@
         private System.Windows.Forms.RadioButton inputRadioButton;
         private System.Windows.Forms.RadioButton drawRadioButton;
         private System.Windows.Forms.RadioButton silentRadioButton;
+        private System.Windows.Forms.RadioButton drawFullScreenRadioButton;
 
     }
 }
