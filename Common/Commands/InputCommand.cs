@@ -13,7 +13,26 @@ namespace Polymedia.PolyJoin.Common
             CommandName = CommandName.Input;
         }
 
-        public int MouseX { get; set; }
-        public int MouseY { get; set; }
+        public MouseInput MouseInput { get; set; }
+    }
+
+    [Serializable]
+    public class MouseInput
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public bool LeftButton { get; set; }
+        public bool RightButton { get; set; }
+
+        public MouseInputEnum MouseInputType { get; set; }
+
+        public enum MouseInputEnum
+        {
+            Move,
+            Click,
+            Up,
+            Down
+        }
     }
 }

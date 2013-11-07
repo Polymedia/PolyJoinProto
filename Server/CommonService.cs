@@ -2,30 +2,31 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using Common.Commands;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 
-namespace Polymedia.PolyJoin.Server
+namespace Server
 {
     class CommonService
     {
-        private static Queue queue = Queue.Synchronized(new Queue());
+        private static readonly Queue Queue = Queue.Synchronized(new Queue());
 
-        private static Dictionary<string, Conference> conferences = new Dictionary<string, Conference>();
-        private static Dictionary<ServerWebSocketConnection, string> connections = new Dictionary<ServerWebSocketConnection, string>(); 
+        private static readonly Dictionary<string, Conference> Conferences = new Dictionary<string, Conference>();
+        private static readonly Dictionary<ServerWebSocketConnection, string> Connections = new Dictionary<ServerWebSocketConnection, string>(); 
 
         public static void Init()
         {
             ConnectionManager.GetStateCommandReceived += ConnectionManagerOnGetStateCommandReceived;
             ConnectionManager.DiffCommandReceived += ConnectionManagerOnDiffCommandReceived;
+            ConnectionManager.InputCommandReceived += ConnectionManagerOnInputCommandReceived;
             ConnectionManager.PaintAddFigureCommandRecieved+=ConnectionManagerPaintAddFigureCommandRecieved;
             ConnectionManager.PaintDeleteFigureCommandRecieved += ConnectionManagerPaintDelteFigureCommandRecieved;
 
-            Thread thread = new Thread(() => { 
+            var thread = new Thread(() => { 
                 while(true)
                     ProceedCommand(); 
             });
@@ -35,51 +36,51 @@ namespace Polymedia.PolyJoin.Server
 
         private static void ProceedCommand()
         {
-            Console.WriteLine("Queue length = " + queue.Count);
+            Console.WriteLine("Queue length = " + Queue.Count);
             
-            if (queue.Count == 0)
+            if (Queue.Count == 0)
                 Thread.Sleep(40);
             else
             {
-                Command command = (Command)queue.Dequeue();
+                var command = (Command)Queue.Dequeue();
 
                 if (command is QueryStateCommand)
                 {
                     var queryStateCommand = command as QueryStateCommand;
 
-                    Conference conference = null;
+                    Conference conference;
                     //Если пришел запрос состояния без id конференции (на создание)
                     if (string.IsNullOrWhiteSpace(queryStateCommand.ConferenceId))
                     {
                         string id = Conference.GenerateId();
-                        while (conferences.Keys.Contains(id))
+                        while (Conferences.Keys.Contains(id))
                             id = Conference.GenerateId();
                         
                         conference = Conference.Start(id, (ServerWebSocketConnection) queryStateCommand.SenderConnection,
-                                                      queryStateCommand.Width, queryStateCommand.Height);
+                                                      queryStateCommand.Width, queryStateCommand.Height, queryStateCommand.ClientName);
 
-                        conferences.Add(conference.Id, conference);
+                        Conferences.Add(conference.Id, conference);
                     }
                     else
-                        conferences.TryGetValue(queryStateCommand.ConferenceId, out conference);
+                        Conferences.TryGetValue(queryStateCommand.ConferenceId, out conference);
 
                     if (conference != null)
                     {
                         queryStateCommand.SenderConnection.ConnectionStateChangedEvent += (sender, args) =>
                         {
-                            if (!args.Value)
-                            {
-                                DisconnectCommand disconnectCommand = new DisconnectCommand();
-                                disconnectCommand.SenderConnection = queryStateCommand.SenderConnection;
-                                queue.Enqueue(disconnectCommand);
-                            }
+                            if (args.Value) return;
+                            var disconnectCommand = new DisconnectCommand
+                                {
+                                    SenderConnection = queryStateCommand.SenderConnection
+                                };
+                            Queue.Enqueue(disconnectCommand);
                         };
                         
-                        connections.Add((ServerWebSocketConnection)queryStateCommand.SenderConnection, conference.Id);
-                        conference.AddConnection((ServerWebSocketConnection)queryStateCommand.SenderConnection);
+                        Connections.Add((ServerWebSocketConnection)queryStateCommand.SenderConnection, conference.Id);
+                        conference.AddConnection((ServerWebSocketConnection)queryStateCommand.SenderConnection, queryStateCommand.ClientName);
 
                         ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendState(conference.Id, ((ServerWebSocketConnection)queryStateCommand.SenderConnection).Id, 
-                            command.SenderConnection == conference.PresenterConnection, (int)conference.Bitmap.Size.Width, (int)conference.Bitmap.Size.Height);
+                            command.SenderConnection == conference.PresenterConnection, conference.Bitmap.Size.Width, conference.Bitmap.Size.Height);
                         
                         BroadcastParticipantsCommand(conference);
                     }
@@ -94,7 +95,7 @@ namespace Polymedia.PolyJoin.Server
                         //Отсылаем последний вариант картинки
                         var data = DiffContainer.Split(
                             new KeyValuePair<Rectangle, Bitmap>(
-                                new Rectangle(0, 0, (int)conference.Bitmap.Size.Width, (int)conference.Bitmap.Size.Height), conference.Bitmap), 50000);
+                                new Rectangle(0, 0, conference.Bitmap.Size.Width, conference.Bitmap.Size.Height), conference.Bitmap), 50000);
 
                         foreach (var d in data)
                         {
@@ -106,8 +107,8 @@ namespace Polymedia.PolyJoin.Server
                 {
                     var diffCommand = command as DiffCommand;
 
-                    Conference conference = null;
-                    conferences.TryGetValue(diffCommand.ConferenceId, out conference);
+                    Conference conference;
+                    Conferences.TryGetValue(diffCommand.ConferenceId, out conference);
 
                     if(conference == null)
                         return;
@@ -128,11 +129,11 @@ namespace Polymedia.PolyJoin.Server
                     var disconnectCommand = command as DisconnectCommand;
 
                     string conferenceId =
-                        connections[((ServerWebSocketConnection)disconnectCommand.SenderConnection)];
-                    connections.Remove(((ServerWebSocketConnection)disconnectCommand.SenderConnection));
+                        Connections[((ServerWebSocketConnection)disconnectCommand.SenderConnection)];
+                    Connections.Remove(((ServerWebSocketConnection)disconnectCommand.SenderConnection));
 
-                    Conference conference = null;
-                    conferences.TryGetValue(conferenceId, out conference);
+                    Conference conference;
+                    Conferences.TryGetValue(conferenceId, out conference);
 
                     if (conference != null)
                     {
@@ -141,7 +142,7 @@ namespace Polymedia.PolyJoin.Server
                         BroadcastParticipantsCommand(conference);
 
                         if (conference.Connections.Count == 0 || conference.PresenterConnection == null)
-                            conferences.Remove(conferenceId);
+                            Conferences.Remove(conferenceId);
                     }
 
                     
@@ -150,7 +151,7 @@ namespace Polymedia.PolyJoin.Server
                 {
                     var addFigureCommand = command as PaintAddFigureCommand;
 
-                    Conference conference = conferences[addFigureCommand.ConferenceId];
+                    Conference conference = Conferences[addFigureCommand.ConferenceId];
 
                     if (conference == null)
                         return;
@@ -165,7 +166,7 @@ namespace Polymedia.PolyJoin.Server
                 {
                     var deleteFigureCommand = command as PaintDeleteFigureCommand;
 
-                    Conference conference = conferences[deleteFigureCommand.ConferenceId];
+                    Conference conference = Conferences[deleteFigureCommand.ConferenceId];
 
                     if (conference == null)
                         return;
@@ -175,43 +176,51 @@ namespace Polymedia.PolyJoin.Server
                         if (command.SenderConnection != connection)
                             connection.PaintDeleteFigureCommand(conference.Id, deleteFigureCommand.FigureId);
                     }
+                }else if (command is InputCommand)
+                {
+                    InputCommand inputCommand = command as InputCommand;
+
+                    Conference conference = Conferences[inputCommand.ConferenceId];
+
+                    if (conference == null)
+                        return;
+
+                    conference.PresenterConnection.SendInput(conference.Id, inputCommand.MouseInput);
                 }
             }
         }
 
+        private static void ConnectionManagerOnInputCommandReceived(object sender, SimpleEventArgs<InputCommand> simpleEventArgs)
+        {
+            Queue.Enqueue(simpleEventArgs.Value);
+        }
+
         private static void ConnectionManagerOnGetStateCommandReceived(object sender, SimpleEventArgs<QueryStateCommand> connectionEventArgs)
         {
-            queue.Enqueue(connectionEventArgs.Value);
+            Queue.Enqueue(connectionEventArgs.Value);
         }
 
         private static void ConnectionManagerOnDiffCommandReceived(object sender, SimpleEventArgs<DiffCommand> connectionEventArgs)
         {
-            queue.Enqueue(connectionEventArgs.Value);
+            Queue.Enqueue(connectionEventArgs.Value);
         }
 
         private static void ConnectionManagerPaintAddFigureCommandRecieved(object sender, SimpleEventArgs<PaintAddFigureCommand> e)
         {
-            queue.Enqueue(e.Value);
+            Queue.Enqueue(e.Value);
         }
 
         private static void ConnectionManagerPaintDelteFigureCommandRecieved(object sender, SimpleEventArgs<PaintDeleteFigureCommand> e)
         {
-            queue.Enqueue(e.Value);
+            Queue.Enqueue(e.Value);
         }
 
         private static void BroadcastParticipantsCommand(Conference conference)
         {
-            List<Participant> participants = new List<Participant>();
-            foreach (var connection in conference.Connections)
-            {
-                participants.Add(new Participant()
+            var participants = conference.Connections.Select(connection => new Participant
                 {
-                    Id = connection.Id,
-                    Name = connection.Name,
-                    BrushArgb = connection.BrushArgb,
-                    IsPresenter = connection == conference.PresenterConnection
-                });
-            }
+                    Id = connection.Id, Name = connection.ClientName, BrushArgb = connection.BrushArgb, IsPresenter = connection == conference.PresenterConnection
+                }).ToList();
 
             foreach (var connection in conference.Connections)
                 connection.SendParticipants(conference.Id, participants);
@@ -227,21 +236,19 @@ namespace Polymedia.PolyJoin.Server
         public Bitmap Bitmap;
         public Graphics Graphics;
 
-        private int _lastConnectionNum = 0;
+        private int _lastConnectionNum;
 
-        public static Color[] Colors = new Color[]{Color.Red, Color.Orange, Color.Yellow, Color.Green, Color.LightBlue, Color.Blue, Color.Violet};
+        public static Color[] Colors = new[]{Color.Red, Color.Orange, Color.Yellow, Color.Green, Color.LightBlue, Color.Blue, Color.Violet};
 
         public static string GenerateId()
         {
-            return (new Random()).Next(111111, 999999).ToString();
+            return (new Random()).Next(111111, 999999).ToString(CultureInfo.InvariantCulture);
         }
 
-        public static Conference Start(string id, ServerWebSocketConnection presenterConnection, int presenterWidth, int presenterHeight)
+        public static Conference Start(string id, ServerWebSocketConnection presenterConnection, int presenterWidth, int presenterHeight, string clientName)
         {
-            Conference conference = new Conference();
-            conference.Id = id;
-            conference.PresenterConnection = presenterConnection;
-            conference.AddConnection(presenterConnection);
+            var conference = new Conference {Id = id, PresenterConnection = presenterConnection};
+            conference.AddConnection(presenterConnection, clientName);
 
             conference.Bitmap = new Bitmap(presenterWidth, presenterHeight);
             conference.Graphics = Graphics.FromImage(conference.Bitmap);
@@ -254,15 +261,13 @@ namespace Polymedia.PolyJoin.Server
             return ++_lastConnectionNum;
         }
 
-        public void AddConnection(ServerWebSocketConnection connection)
+        public void AddConnection(ServerWebSocketConnection connection, string clientName)
         {
             if (!Connections.Contains(connection))
             {
                 int num = GenerateConnectionNumber();
-                connection.BrushArgb = Conference.Colors[(num - 1) % Conference.Colors.Length].ToArgb();
-                connection.Name = connection == PresenterConnection
-                    ? "Presenter"
-                    : "Viewer " + num; 
+                connection.BrushArgb = Colors[(num - 1) % Colors.Length].ToArgb();
+                connection.ClientName = clientName;
                 Connections.Add(connection);
             }
         }

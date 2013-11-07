@@ -1,4 +1,4 @@
-﻿namespace Polymedia.PolyJoin.Client
+﻿namespace Client
 {
     partial class ConnectForm
     {
@@ -37,6 +37,8 @@
             this.joinRadioButton = new System.Windows.Forms.RadioButton();
             this.serverIPTextBox = new System.Windows.Forms.TextBox();
             this.serverIpLabel = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.nameTextBox = new System.Windows.Forms.TextBox();
             this.connectionTypeGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -76,7 +78,7 @@
             this.connectionTypeGroupBox.Controls.Add(this.createRadioButton);
             this.connectionTypeGroupBox.Controls.Add(this.joinButton);
             this.connectionTypeGroupBox.Controls.Add(this.startButton);
-            this.connectionTypeGroupBox.Location = new System.Drawing.Point(12, 32);
+            this.connectionTypeGroupBox.Location = new System.Drawing.Point(12, 87);
             this.connectionTypeGroupBox.Name = "connectionTypeGroupBox";
             this.connectionTypeGroupBox.Size = new System.Drawing.Size(391, 140);
             this.connectionTypeGroupBox.TabIndex = 7;
@@ -128,11 +130,29 @@
             this.serverIpLabel.TabIndex = 9;
             this.serverIpLabel.Text = "Server IP";
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(15, 48);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(61, 13);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "Your name:";
+            // 
+            // nameTextBox
+            // 
+            this.nameTextBox.Location = new System.Drawing.Point(142, 45);
+            this.nameTextBox.Name = "nameTextBox";
+            this.nameTextBox.Size = new System.Drawing.Size(255, 20);
+            this.nameTextBox.TabIndex = 11;
+            // 
             // ConnectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(416, 186);
+            this.ClientSize = new System.Drawing.Size(416, 239);
+            this.Controls.Add(this.nameTextBox);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.serverIPTextBox);
             this.Controls.Add(this.serverIpLabel);
             this.Controls.Add(this.connectionTypeGroupBox);
@@ -159,5 +179,7 @@
         private System.Windows.Forms.RadioButton joinRadioButton;
         private System.Windows.Forms.TextBox serverIPTextBox;
         private System.Windows.Forms.Label serverIpLabel;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox nameTextBox;
     }
 }

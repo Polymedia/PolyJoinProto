@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Configuration;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.IO;
-using System.Drawing;
-using DifferenceLib;
 using System.Windows.Forms;
+using Polymedia.PolyJoin.Client;
 
-namespace Polymedia.PolyJoin.Client
+namespace Client
 {
     class Program
     {
@@ -16,15 +12,13 @@ namespace Polymedia.PolyJoin.Client
 	    private static ConnectionManager _connectionManager;
 
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            _connectionManager = new ConnectionManager();
-            _connectionManager.ServerIp = "localhost";
-            _connectForm = new ConnectForm();
-            _connectForm.ServerIp = _connectionManager.ServerIp;
+            _connectionManager = new ConnectionManager {ServerIp = "localhost"};
+            _connectForm = new ConnectForm {ServerIp = _connectionManager.ServerIp};
             _mainForm = new MainForm
                 {
                     ScreenshotScale = float.Parse(ConfigurationSettings.AppSettings["scale"]),
@@ -40,6 +34,7 @@ namespace Polymedia.PolyJoin.Client
                         var clientWebSocketConnection = new ClientWebSocketConnection(_connectionManager.GetConnection());
                         _mainForm.ClientWebSocketConnection = clientWebSocketConnection;
                         _mainForm.ConferenceId = _connectForm.ConferenceId;
+                        _mainForm.ClientName = _connectForm.ClientName;
 
                         _connectionManager.Connect();
                         

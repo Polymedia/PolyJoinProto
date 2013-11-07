@@ -1,4 +1,4 @@
-﻿namespace Polymedia.PolyJoin.Client
+﻿namespace Client
 {
     partial class MainForm
     {
@@ -122,7 +122,7 @@
             this.modeGroupBox.Controls.Add(this.silentRadioButton);
             this.modeGroupBox.Location = new System.Drawing.Point(12, 52);
             this.modeGroupBox.Name = "modeGroupBox";
-            this.modeGroupBox.Size = new System.Drawing.Size(270, 90);
+            this.modeGroupBox.Size = new System.Drawing.Size(270, 91);
             this.modeGroupBox.TabIndex = 9;
             this.modeGroupBox.TabStop = false;
             this.modeGroupBox.Text = "Mode";
@@ -173,11 +173,11 @@
             this.IsPresenterColumn,
             this.ColorColumn});
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.dataGridView.Location = new System.Drawing.Point(0, 148);
+            this.dataGridView.Location = new System.Drawing.Point(0, 149);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.ReadOnly = true;
             this.dataGridView.RowHeadersVisible = false;
-            this.dataGridView.Size = new System.Drawing.Size(294, 312);
+            this.dataGridView.Size = new System.Drawing.Size(294, 311);
             this.dataGridView.TabIndex = 8;
             // 
             // IdColumn

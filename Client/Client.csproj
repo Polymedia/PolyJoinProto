@@ -55,12 +55,19 @@
     </Compile>
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionManager.cs" />
+    <Compile Include="TopMostForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TopMostForm.Designer.cs">
+      <DependentUpon>TopMostForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MouseAPI.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -86,6 +93,9 @@
   <ItemGroup>
     <EmbeddedResource Include="ConnectForm.resx">
       <DependentUpon>ConnectForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TopMostForm.resx">
+      <DependentUpon>TopMostForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

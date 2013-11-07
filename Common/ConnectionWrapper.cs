@@ -7,7 +7,7 @@ namespace Polymedia.PolyJoin.Common
     public abstract class ConnectionWrapper
     {
         private IWebSocketConnection _webSocketConnection;
-
+        
         protected IWebSocketConnection WebSocketConnection
         {
             get { return _webSocketConnection; }
