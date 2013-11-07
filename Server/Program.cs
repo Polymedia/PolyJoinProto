@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ServiceModel.Description;
+using DifferenceLib;
 using Microsoft.ServiceModel.WebSockets;
 
 namespace Server
@@ -8,6 +9,8 @@ namespace Server
     {
         static void Main(string[] args)
         {
+            DiffContainer.Init(100);
+
             var host = new WebSocketHost(typeof(Connection), new ServiceThrottlingBehavior()
             {
                 MaxConcurrentSessions = int.MaxValue,
