@@ -617,7 +617,7 @@ namespace Client
                     {
                         Console.WriteLine("_diffDetectThread : " + ex.Message );
                     }
-                    //Thread.Sleep(ScreenshotTimeout);
+                    Thread.Sleep(ScreenshotTimeout);
                 }
             });
             _diffDetectThread.Start();
