@@ -174,7 +174,6 @@ namespace DifferenceLib
                 _oldImage = new Bitmap(newFrame.Width, newFrame.Height);
 
             var diffContainer = new DiffContainer();
-            DiffContainer.Init(_jpegQuality);
 
             var bitmapData = newFrame.LockBits(new Rectangle(0, 0, newFrame.Width, newFrame.Height), ImageLockMode.ReadOnly,
                               PixelFormat.Format32bppArgb);

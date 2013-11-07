@@ -103,8 +103,8 @@ namespace Polymedia.PolyJoin.Client
 
                 if (_startTime == default(DateTime))
                     _startTime = DateTime.Now;
-                
-                if (_startTime.Subtract(DateTime.Now).TotalSeconds > 3)
+
+                if (DateTime.Now.Subtract(_startTime).TotalSeconds > 3)
                 {
                     var _100kb = 102400;
 

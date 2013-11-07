@@ -38,14 +38,8 @@ namespace DifferenceLib
             //myEncoderParameters.Param[0] = myEncoderParameter;
         }
 
-        private static bool _initialized;
-
         public static void Init(byte jpegQuality)
         {
-            if (_initialized)
-                return;
-            
-            _initialized = true;
 
             jgpEncoder = GetEncoder(ImageFormat.Jpeg);
 

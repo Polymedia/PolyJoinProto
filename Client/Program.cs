@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Windows.Forms;
 using Polymedia.PolyJoin.Client;
+using DifferenceLib;
 
 namespace Client
 {
@@ -16,6 +17,8 @@ namespace Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            DiffContainer.Init(byte.Parse(ConfigurationSettings.AppSettings["quality"]));
 
             _connectionManager = new ConnectionManager {ServerIp = "localhost"};
             _connectForm = new ConnectForm {ServerIp = _connectionManager.ServerIp};
