@@ -18,7 +18,27 @@ namespace DifferenceLib
         public Dictionary<Rectangle, Bitmap> Data = new Dictionary<Rectangle, Bitmap>();
         static ImageCodecInfo jgpEncoder;
         static EncoderParameters myEncoderParameters;
+
         static DiffContainer()
+        {
+            //jgpEncoder = GetEncoder(ImageFormat.Jpeg);
+
+            //// Create an Encoder object based on the GUID
+            //// for the Quality parameter category.
+            //System.Drawing.Imaging.Encoder myEncoder =
+            //    System.Drawing.Imaging.Encoder.Quality;
+
+            //// Create an EncoderParameters object.
+            //// An EncoderParameters object has an array of EncoderParameter
+            //// objects. In this case, there is only one
+            //// EncoderParameter object in the array.
+            //myEncoderParameters = new EncoderParameters(1);
+
+            //EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder,jpegQuality);
+            //myEncoderParameters.Param[0] = myEncoderParameter;
+        }
+
+        public void Init(byte jpegQuality)
         {
             jgpEncoder = GetEncoder(ImageFormat.Jpeg);
 
@@ -33,9 +53,11 @@ namespace DifferenceLib
             // EncoderParameter object in the array.
             myEncoderParameters = new EncoderParameters(1);
 
-            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder,
-                60L);
+            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, Int64.Parse(jpegQuality.ToString()));
             myEncoderParameters.Param[0] = myEncoderParameter;
+
+
+
         }
 
         private static ImageCodecInfo GetEncoder(ImageFormat format)
@@ -63,7 +85,7 @@ namespace DifferenceLib
                 int y = d.Key.Y;
                 int width = d.Key.Width;
                 int height = d.Key.Height;
-                
+
 
                 var diffBytes = BitConverter.GetBytes(x).
                                              Concat(BitConverter.GetBytes(y)).
@@ -101,7 +123,7 @@ namespace DifferenceLib
                     bmp = GetBitmap(bitmapSource);
                 }
 
-                return new KeyValuePair<Rectangle, Bitmap>(new Rectangle(x,y,width,height), bmp);
+                return new KeyValuePair<Rectangle, Bitmap>(new Rectangle(x, y, width, height), bmp);
             }
             catch
             {
@@ -123,7 +145,7 @@ namespace DifferenceLib
             source.CopyPixels(
                 Int32Rect.Empty,
                 data.Scan0,
-                data.Height*data.Stride,
+                data.Height * data.Stride,
                 data.Stride);
             bmp.UnlockBits(data);
             return bmp;
@@ -158,7 +180,7 @@ namespace DifferenceLib
         {
             using (MemoryStream ms = new MemoryStream())
             {
-              imageIn.Save(ms, jgpEncoder, myEncoderParameters);
+                imageIn.Save(ms, jgpEncoder, myEncoderParameters);
                 //imageIn.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
                 return ms.ToArray();
             }
@@ -221,10 +243,10 @@ namespace DifferenceLib
                 //             new Rectangle(originalImage.Value.Width / 2, 0, originalImage.Value.Width / 2, originalImage.Value.Height),
                 //             GraphicsUnit.Pixel);
 
-                r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width/2,
+                r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width / 2,
                                    originalImage.Key.Height);
 
-                r2 = new Rectangle(originalImage.Key.X + originalImage.Key.Width/2, originalImage.Key.Y, originalImage.Key.Width/2,
+                r2 = new Rectangle(originalImage.Key.X + originalImage.Key.Width / 2, originalImage.Key.Y, originalImage.Key.Width / 2,
                                    originalImage.Key.Height);
             }
             else
@@ -253,10 +275,10 @@ namespace DifferenceLib
                 //             GraphicsUnit.Pixel);
 
                 r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width,
-                                   originalImage.Key.Height/2);
+                                   originalImage.Key.Height / 2);
 
-                r2 = new Rectangle(originalImage.Key.X, originalImage.Key.Y + originalImage.Key.Height/2, originalImage.Key.Width,
-                                   originalImage.Key.Height/2);
+                r2 = new Rectangle(originalImage.Key.X, originalImage.Key.Y + originalImage.Key.Height / 2, originalImage.Key.Width,
+                                   originalImage.Key.Height / 2);
             }
 
 

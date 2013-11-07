@@ -22,6 +22,7 @@ namespace DifferenceLib
     {
         private Bitmap _oldImage;
 
+
         //private Stopwatch sw = new Stopwatch();
 
         Image<Bgr, Byte> Previous_Frame = null;
@@ -153,6 +154,18 @@ namespace DifferenceLib
 
     public class CustomDiffDetector : IDiffDetector
     {
+        private byte _jpegQuality;
+
+        public CustomDiffDetector()
+        {
+
+        }
+
+        public CustomDiffDetector(byte quality)
+        {
+            _jpegQuality = quality;
+        }
+
         private Bitmap _oldImage;
 
         public DiffContainer GetDiffs(Bitmap newFrame, int compressRate)
@@ -161,6 +174,7 @@ namespace DifferenceLib
                 _oldImage = new Bitmap(newFrame.Width, newFrame.Height);
 
             var diffContainer = new DiffContainer();
+            diffContainer.Init(_jpegQuality);
 
             var bitmapData = newFrame.LockBits(new Rectangle(0, 0, newFrame.Width, newFrame.Height), ImageLockMode.ReadOnly,
                               PixelFormat.Format32bppArgb);

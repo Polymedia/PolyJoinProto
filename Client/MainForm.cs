@@ -47,6 +47,7 @@ namespace Client
 
         public float ScreenshotScale { get; set; }
         public int ScreenshotTimeout { get; set; }
+        public byte JpegQuality { get; set; }
 
         public string ConferenceId { get; set; }
         public string ClientName { get; set; }
@@ -572,7 +573,8 @@ namespace Client
             _diffDetectThread = new Thread(() =>
             {
 
-                IDiffDetector _diffDetector = new CustomDiffDetector();
+                IDiffDetector _diffDetector = new CustomDiffDetector(JpegQuality);
+                
                 //IDiffDetector _diffDetector = new DiffDetector();
                 //IDiffDetector _diffDetector = new DiffDetectorOpenCvSharp();
 

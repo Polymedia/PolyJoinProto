@@ -22,7 +22,8 @@ namespace Client
             _mainForm = new MainForm
                 {
                     ScreenshotScale = float.Parse(ConfigurationSettings.AppSettings["scale"]),
-                    ScreenshotTimeout = int.Parse(ConfigurationSettings.AppSettings["timeout"])
+                    ScreenshotTimeout = int.Parse(ConfigurationSettings.AppSettings["timeout"]),
+                    JpegQuality = byte.Parse(ConfigurationSettings.AppSettings["quality"])
                 };
 
             _connectForm.VisibleChanged += (sender, eventArgs) =>
