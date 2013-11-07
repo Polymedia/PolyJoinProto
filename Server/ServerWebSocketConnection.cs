@@ -14,36 +14,53 @@ namespace Server
         public event EventHandler<SimpleEventArgs<InputCommand>> InputCommandReceived = delegate { };
         public event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
         public event EventHandler<SimpleEventArgs<PaintDeleteFigureCommand>> PaintDeleteFigureCommandRecieved = delegate { };
+        public event EventHandler<SimpleEventArgs<ControlAccessCommand>> ControlAccessCommandReceived = delegate { };
+        public event EventHandler<SimpleEventArgs<RequestControlCommand>> RequestControllCommandReceived = delegate { }; 
 
         public string Id = Guid.NewGuid().ToString();
         public string ClientName = string.Empty;
+        public bool IsInputController = false;
         public int BrushArgb = 0;
+        
+
 
         public ServerWebSocketConnection(IWebSocketConnection webSocketConnection) : base(webSocketConnection)
         {
         }
 
+        public void ChangeControlAccess(string conferenceId, string presenterId, string clientId, bool isAllowed)
+        {
+            var command = new ControlAccessCommand(conferenceId, presenterId, clientId, isAllowed);
+            SendCommand(command);
+        }
+
+        public void RequestControl(string conferenceId, string clientId, bool isAllowed)
+        {
+            var command = new RequestControlCommand(conferenceId, clientId, isAllowed);
+            SendCommand(command);
+        }
+
         public void SendState(string conferenceId, string id, bool isPresenter, int presenterWidth, int presenterHeight)
         {
-            StateCommand command = new StateCommand(conferenceId);
-            command.ParticipantId = id;
-            command.IsPresenter = isPresenter;
-            command.PresenterWidth = presenterWidth;
-            command.PresenterHeight = presenterHeight;
+            var command = new StateCommand(conferenceId)
+                {
+                    ParticipantId = id,
+                    IsPresenter = isPresenter,
+                    PresenterWidth = presenterWidth,
+                    PresenterHeight = presenterHeight
+                };
             SendCommand(command);
         }
 
         public void SendDiff(string conferenceId, DiffItem diffItem)
         {
-            DiffCommand command = new DiffCommand(conferenceId);
-            command.DiffItem = diffItem;
+            var command = new DiffCommand(conferenceId) {DiffItem = diffItem};
             SendCommand(command);
         }
 
         public void SendParticipants(string conferenceId, List<Participant> participants)
         {
-            ParticipantsCommand command = new ParticipantsCommand(conferenceId);
-            command.Participants = participants;
+            var command = new ParticipantsCommand(conferenceId) {Participants = participants};
             SendCommand(command);
         }
 
@@ -76,28 +93,38 @@ namespace Server
             {
                 case CommandName.GetState:
                     Console.WriteLine("Command GetState");
-                    GetStateCommandReceived.Invoke(this, new SimpleEventArgs<QueryStateCommand>() { Value = (QueryStateCommand)command });
+                    GetStateCommandReceived.Invoke(this, new SimpleEventArgs<QueryStateCommand> { Value = (QueryStateCommand)command });
                     break;
                 case CommandName.Diff:
                     Console.WriteLine("Command Diff");
-                    DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand>() { Value = (DiffCommand)command });
+                    DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand> { Value = (DiffCommand)command });
                     break;
                 case CommandName.Input:
                     Console.WriteLine("Command Input");
-                    InputCommandReceived.Invoke(this, new SimpleEventArgs<InputCommand>() { Value = (InputCommand)command });
+                    InputCommandReceived.Invoke(this, new SimpleEventArgs<InputCommand> { Value = (InputCommand)command });
                     break;
                 case CommandName.PaintAddFigure:
                     Console.WriteLine("Command PaintAddFigure");
-                    PaintAddFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintAddFigureCommand>() { Value = (PaintAddFigureCommand)command });
+                    PaintAddFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintAddFigureCommand> { Value = (PaintAddFigureCommand)command });
                     break;
                 case CommandName.PaintDeleteFigure:
                     Console.WriteLine("Command PaintDeleteFigure");
-                    PaintDeleteFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintDeleteFigureCommand>() { Value = (PaintDeleteFigureCommand)command });
+                    PaintDeleteFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintDeleteFigureCommand> { Value = (PaintDeleteFigureCommand)command });
+                    break;
+                case CommandName.ControlAccess:
+                    Console.WriteLine("Command ControllAccess");
+                    ControlAccessCommandReceived.Invoke(this, new SimpleEventArgs<ControlAccessCommand> { Value = (ControlAccessCommand)command });
+                    break;
+                case CommandName.RequestControl:
+                    Console.WriteLine("Command RequestControl");
+                    RequestControllCommandReceived.Invoke(this, new SimpleEventArgs<RequestControlCommand> { Value = (RequestControlCommand)command });
                     break;
                 default:
                     Console.WriteLine("Unknown command");
                     break;
             }
         }
+
+        
     }
 }

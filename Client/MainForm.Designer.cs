@@ -34,19 +34,20 @@
             this.connectionStateLabel = new System.Windows.Forms.Label();
             this.leftPanel = new System.Windows.Forms.Panel();
             this.modeGroupBox = new System.Windows.Forms.GroupBox();
+            this.drawFullScreenRadioButton = new System.Windows.Forms.RadioButton();
             this.inputRadioButton = new System.Windows.Forms.RadioButton();
             this.drawRadioButton = new System.Windows.Forms.RadioButton();
             this.silentRadioButton = new System.Windows.Forms.RadioButton();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.IdColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.IsPresenterColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.ColorColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.roleValueLabel = new System.Windows.Forms.Label();
             this.roleLabel = new System.Windows.Forms.Label();
             this.conferenceIdValueLabel = new System.Windows.Forms.Label();
             this.conferenceIdlabel = new System.Windows.Forms.Label();
-            this.drawFullScreenRadioButton = new System.Windows.Forms.RadioButton();
+            this.IdColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.IsPresenterColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.IsInputContollerColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.ColorColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tableLayoutPanel.SuspendLayout();
             this.topPanel.SuspendLayout();
             this.leftPanel.SuspendLayout();
@@ -129,6 +130,16 @@
             this.modeGroupBox.TabStop = false;
             this.modeGroupBox.Text = "Mode";
             // 
+            // drawFullScreenRadioButton
+            // 
+            this.drawFullScreenRadioButton.AutoSize = true;
+            this.drawFullScreenRadioButton.Location = new System.Drawing.Point(8, 65);
+            this.drawFullScreenRadioButton.Name = "drawFullScreenRadioButton";
+            this.drawFullScreenRadioButton.Size = new System.Drawing.Size(169, 17);
+            this.drawFullScreenRadioButton.TabIndex = 3;
+            this.drawFullScreenRadioButton.Text = "Draw full screen (Esc to leave)";
+            this.drawFullScreenRadioButton.UseVisualStyleBackColor = true;
+            // 
             // inputRadioButton
             // 
             this.inputRadioButton.AutoSize = true;
@@ -173,6 +184,7 @@
             this.IdColumn,
             this.NameColumn,
             this.IsPresenterColumn,
+            this.IsInputContollerColumn,
             this.ColorColumn});
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.dataGridView.Location = new System.Drawing.Point(0, 170);
@@ -181,38 +193,6 @@
             this.dataGridView.RowHeadersVisible = false;
             this.dataGridView.Size = new System.Drawing.Size(294, 290);
             this.dataGridView.TabIndex = 8;
-            // 
-            // IdColumn
-            // 
-            this.IdColumn.DataPropertyName = "Id";
-            this.IdColumn.HeaderText = "Id";
-            this.IdColumn.Name = "IdColumn";
-            this.IdColumn.ReadOnly = true;
-            this.IdColumn.Visible = false;
-            // 
-            // NameColumn
-            // 
-            this.NameColumn.DataPropertyName = "Name";
-            this.NameColumn.HeaderText = "Name";
-            this.NameColumn.Name = "NameColumn";
-            this.NameColumn.ReadOnly = true;
-            // 
-            // IsPresenterColumn
-            // 
-            this.IsPresenterColumn.DataPropertyName = "IsPresenter";
-            this.IsPresenterColumn.HeaderText = "Is presenter";
-            this.IsPresenterColumn.Name = "IsPresenterColumn";
-            this.IsPresenterColumn.ReadOnly = true;
-            this.IsPresenterColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.IsPresenterColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // ColorColumn
-            // 
-            this.ColorColumn.DataPropertyName = "BrushArgb";
-            this.ColorColumn.HeaderText = "Color";
-            this.ColorColumn.Name = "ColorColumn";
-            this.ColorColumn.ReadOnly = true;
-            this.ColorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
             // roleValueLabel
             // 
@@ -248,15 +228,45 @@
             this.conferenceIdlabel.TabIndex = 4;
             this.conferenceIdlabel.Text = "Conference ID:";
             // 
-            // drawFullScreenRadioButton
+            // IdColumn
             // 
-            this.drawFullScreenRadioButton.AutoSize = true;
-            this.drawFullScreenRadioButton.Location = new System.Drawing.Point(8, 65);
-            this.drawFullScreenRadioButton.Name = "drawFullScreenRadioButton";
-            this.drawFullScreenRadioButton.Size = new System.Drawing.Size(169, 17);
-            this.drawFullScreenRadioButton.TabIndex = 3;
-            this.drawFullScreenRadioButton.Text = "Draw full screen (Esc to leave)";
-            this.drawFullScreenRadioButton.UseVisualStyleBackColor = true;
+            this.IdColumn.DataPropertyName = "Id";
+            this.IdColumn.HeaderText = "Id";
+            this.IdColumn.Name = "IdColumn";
+            this.IdColumn.ReadOnly = true;
+            this.IdColumn.Visible = false;
+            // 
+            // NameColumn
+            // 
+            this.NameColumn.DataPropertyName = "Name";
+            this.NameColumn.HeaderText = "Name";
+            this.NameColumn.Name = "NameColumn";
+            this.NameColumn.ReadOnly = true;
+            // 
+            // IsPresenterColumn
+            // 
+            this.IsPresenterColumn.DataPropertyName = "IsPresenter";
+            this.IsPresenterColumn.HeaderText = "Is presenter";
+            this.IsPresenterColumn.Name = "IsPresenterColumn";
+            this.IsPresenterColumn.ReadOnly = true;
+            this.IsPresenterColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.IsPresenterColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // IsInputContollerColumn
+            // 
+            this.IsInputContollerColumn.DataPropertyName = "IsInputController";
+            this.IsInputContollerColumn.HeaderText = "Is input contoller";
+            this.IsInputContollerColumn.Name = "IsInputContollerColumn";
+            this.IsInputContollerColumn.ReadOnly = true;
+            this.IsInputContollerColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // ColorColumn
+            // 
+            this.ColorColumn.DataPropertyName = "BrushArgb";
+            this.ColorColumn.HeaderText = "Color";
+            this.ColorColumn.Name = "ColorColumn";
+            this.ColorColumn.ReadOnly = true;
+            this.ColorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
             // MainForm
             // 
@@ -291,15 +301,16 @@
         private System.Windows.Forms.Label roleValueLabel;
         private System.Windows.Forms.Label roleLabel;
         private System.Windows.Forms.DataGridView dataGridView;
-        private System.Windows.Forms.DataGridViewTextBoxColumn IdColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn NameColumn;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn IsPresenterColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColorColumn;
         private System.Windows.Forms.GroupBox modeGroupBox;
         private System.Windows.Forms.RadioButton inputRadioButton;
         private System.Windows.Forms.RadioButton drawRadioButton;
         private System.Windows.Forms.RadioButton silentRadioButton;
         private System.Windows.Forms.RadioButton drawFullScreenRadioButton;
+        private System.Windows.Forms.DataGridViewTextBoxColumn IdColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn NameColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn IsPresenterColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn IsInputContollerColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColorColumn;
 
     }
 }

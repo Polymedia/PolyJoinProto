@@ -25,6 +25,8 @@ namespace Server
             ConnectionManager.InputCommandReceived += ConnectionManagerOnInputCommandReceived;
             ConnectionManager.PaintAddFigureCommandRecieved+=ConnectionManagerPaintAddFigureCommandRecieved;
             ConnectionManager.PaintDeleteFigureCommandRecieved += ConnectionManagerPaintDelteFigureCommandRecieved;
+            ConnectionManager.ControllAccessCommandReceived += ConnectionManagerOnControllAccessCommandReceived;
+            ConnectionManager.RequestControlCommandReceived += ConnectionManagerOnRequestControlCommandReceived;
 
             var thread = new Thread(() => { 
                 while(true)
@@ -178,6 +180,7 @@ namespace Server
                     }
                 }else if (command is InputCommand)
                 {
+                    var connection = (ServerWebSocketConnection) command.SenderConnection;
                     InputCommand inputCommand = command as InputCommand;
 
                     Conference conference = Conferences[inputCommand.ConferenceId];
@@ -185,10 +188,79 @@ namespace Server
                     if (conference == null)
                         return;
 
+                    bool isAllowed = PresenterToControllingClient.ContainsKey(conference.PresenterConnection.Id) &&
+                             PresenterToControllingClient[conference.PresenterConnection.Id].Equals(connection.Id);
+                    if (!isAllowed) return;
+
                     conference.PresenterConnection.SendInput(conference.Id, inputCommand.MouseInput);
+                } else if (command is ControlAccessCommand)
+                {
+                    var controlAccessCommand = command as ControlAccessCommand;
+                    Conference conference = Conferences[controlAccessCommand.ConferenceId];
+                    if (conference == null)
+                        return;
+
+                    if (controlAccessCommand.PresenterId.Equals("0"))
+                        controlAccessCommand.PresenterId = conference.PresenterConnection.Id;
+
+                    var isAllowed = controlAccessCommand.IsAllowed;
+                    var presenterId = controlAccessCommand.PresenterId;
+                    var conferenceId = controlAccessCommand.ConferenceId;
+                    var clientId = controlAccessCommand.ClientId;
+                    
+                    if (!isAllowed)
+                    {
+                        if (PresenterToControllingClient.ContainsKey(presenterId) && PresenterToControllingClient[presenterId].Equals(clientId))
+                            PresenterToControllingClient.Remove(presenterId);
+                    }
+
+                    if (PresenterToControllingClient.ContainsKey(presenterId))
+                    {
+                        var controllingClientId = PresenterToControllingClient[presenterId];
+                        foreach (var connection in conference.Connections)
+                        {
+                            connection.ChangeControlAccess(conferenceId, presenterId, controllingClientId, false);
+                        }
+                        PresenterToControllingClient.Remove(presenterId);
+                    }
+
+                    if (isAllowed)
+                        PresenterToControllingClient[presenterId] = clientId;
+
+                    foreach (var connection in conference.Connections)
+                    {
+                        connection.ChangeControlAccess(conferenceId, presenterId, clientId, isAllowed);
+                    }
+
+                    var senderConnection = conference.Connections.FirstOrDefault(c => c.Id.Equals(controlAccessCommand.ClientId));
+                    if (senderConnection == null)
+                        return;
+
+                    var clientConnection =
+                        conference.Connections.FirstOrDefault(c => c.Id.Equals(controlAccessCommand.ClientId));
+
+                    if (clientConnection == null)
+                        return;
+
+                    clientConnection.IsInputController = controlAccessCommand.IsAllowed;
+                
+                } else if (command is RequestControlCommand)
+                {
+                    var senderConnection = (ServerWebSocketConnection) command.SenderConnection;
+                    var requestControlCommand = command as RequestControlCommand;
+                    Conference conference = Conferences[requestControlCommand.ConferenceId];
+                    if (conference == null)
+                        return;
+
+                    foreach (var connection in conference.Connections)
+                    {
+                        connection.RequestControl(requestControlCommand.ConferenceId, senderConnection.Id, requestControlCommand.IsAllowed);
+                    }
                 }
             }
         }
+
+        private static readonly Dictionary<string, string> PresenterToControllingClient = new Dictionary<string, string>(); 
 
         private static void ConnectionManagerOnInputCommandReceived(object sender, SimpleEventArgs<InputCommand> simpleEventArgs)
         {
@@ -215,11 +287,21 @@ namespace Server
             Queue.Enqueue(e.Value);
         }
 
+        private static void ConnectionManagerOnControllAccessCommandReceived(object sender, SimpleEventArgs<ControlAccessCommand> e)
+        {
+            Queue.Enqueue(e.Value);
+        }
+
+        private static void ConnectionManagerOnRequestControlCommandReceived(object sender, SimpleEventArgs<RequestControlCommand> e)
+        {
+            Queue.Enqueue(e.Value);
+        }
+
         private static void BroadcastParticipantsCommand(Conference conference)
         {
             var participants = conference.Connections.Select(connection => new Participant
                 {
-                    Id = connection.Id, Name = connection.ClientName, BrushArgb = connection.BrushArgb, IsPresenter = connection == conference.PresenterConnection
+                    Id = connection.Id, Name = connection.ClientName, BrushArgb = connection.BrushArgb, IsPresenter = connection == conference.PresenterConnection, IsInputController = connection.IsInputController
                 }).ToList();
 
             foreach (var connection in conference.Connections)

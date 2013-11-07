@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using Common.Commands;
 using DifferenceLib;
 using Polymedia.PolyJoin.Client;
 using Polymedia.PolyJoin.Common;
@@ -35,6 +37,8 @@ namespace Client
                 _clientWebSocketConnection.InputCommandReceived += ClientWebSocketConnectionOnInputCommandReceived;
                 _clientWebSocketConnection.PaintAddFigureCommandRecieved += ClientWebSocketConnectionPaintAddFigureCommandRecieved;
                 _clientWebSocketConnection.PaintDeleteFigureCommandRecieved += ClientWebSocketConnectionPaintDeleteFigureCommandRecieved;
+                _clientWebSocketConnection.RequestControlCommandReceived += ClientWebSocketConnectionOnRequestControlCommandReceived;
+                _clientWebSocketConnection.ControlAccessCommandReceived += ClientWebSocketConnectionOnControlAccessCommandReceived;
             }
             private get { return _clientWebSocketConnection; }
         }
@@ -63,6 +67,18 @@ namespace Client
 
             dataGridView.AutoGenerateColumns = false;
             dataGridView.SelectionChanged += (sender, ea) => dataGridView.ClearSelection();
+            dataGridView.CellDoubleClick += (sender, args) =>
+                {
+                    if (!_isPresenter) return;
+
+                    var clickedParticipantRowIndex = args.RowIndex;
+                    var participants = (IList<Participant>) dataGridView.DataSource;
+                    if (participants == null || clickedParticipantRowIndex < 0 ||
+                        clickedParticipantRowIndex >= participants.Count) return;
+
+                    var clickedParticipant = participants[clickedParticipantRowIndex];
+                    ClientWebSocketConnection.ControlAccessCommand(ConferenceId, _id, clickedParticipant.Id, true);
+                };
             dataGridView.CellPainting += (sender, args) =>
                 {
                     if (dataGridView.Columns["ColorColumn"] != null && dataGridView.Columns["ColorColumn"].Index == args.ColumnIndex && args.RowIndex >= 0)
@@ -160,6 +176,22 @@ namespace Client
 
         private void RadioButtonOnCheckedChanged(object sender, EventArgs eventArgs)
         {
+            if (sender == inputRadioButton)
+            {
+                if (inputRadioButton.Checked)
+                {
+                    if (_isPresenter)
+                        return;
+
+                    ClientWebSocketConnection.RequestControlCommand(ConferenceId, _id, true);
+                }
+                else
+                {
+                    ClientWebSocketConnection.RequestControlCommand(ConferenceId, _id, false);
+                    ClientWebSocketConnection.ControlAccessCommand(ConferenceId, "0", _id, false); //Хак (передаем ноль, так как в данной реализации может быть только один презентер и этот ноль переопределиться на сервере в нормальный id presenter'а)
+                }
+            }
+
             if(silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
             if (drawRadioButton.Checked) _paintControl.Mode = PaintControlModes.Draw;
             if (inputRadioButton.Checked) _paintControl.Mode = PaintControlModes.Input;
@@ -262,6 +294,16 @@ namespace Client
             _queue.Enqueue(e.Value);
         }
 
+        private void ClientWebSocketConnectionOnRequestControlCommandReceived(object sender, SimpleEventArgs<RequestControlCommand> e)
+        {
+            _queue.Enqueue(e.Value);
+        }
+
+        private void ClientWebSocketConnectionOnControlAccessCommandReceived(object sender, SimpleEventArgs<ControlAccessCommand> e)
+        {
+            _queue.Enqueue(e.Value);
+        }
+
         public void StartProcessCommandsThread()
         {
             _runProcessCommandsThread = false;
@@ -312,6 +354,16 @@ namespace Client
                                     command as PaintDeleteFigureCommand;
                                 ProcessPaintDeleteFigureCommand(paintDeleteFigureCommand);
                             }
+                            else if (command is RequestControlCommand)
+                            {
+                                var requestControlCommand = command as RequestControlCommand;
+                                ProcessRequestControlCommand(requestControlCommand);
+                            }
+                            else if (command is ControlAccessCommand)
+                            {
+                                var controllAccessCommand = command as ControlAccessCommand;
+                                ProcessControlAccessCommand(controllAccessCommand);
+                            }
                         }
                         else
                         {
@@ -342,6 +394,63 @@ namespace Client
                 }
             });
             _processCommandsThread.Start();
+        }
+
+        private int GetRowIndex(string clientId)
+        {
+            var participants = dataGridView.DataSource as IList<Participant>;
+            if (participants == null)
+                return -1;
+            var requestedControlParticipant =
+                participants.FirstOrDefault(p => p.Id.Equals(clientId));
+            if (requestedControlParticipant == null)
+                return -1;
+            var requestedControlParticipantIndex = participants.IndexOf(requestedControlParticipant);
+            return requestedControlParticipantIndex;
+        }
+
+        private Color GetRowBackColor(bool controllIsAllowed)
+        {
+            return controllIsAllowed ? Color.Aqua : Color.White;
+        }
+
+        private void ProcessRequestControlCommand(RequestControlCommand requestControlCommand)
+        {
+            var rowIndex = GetRowIndex(requestControlCommand.ClientId);
+            if (rowIndex < 0)
+                return;
+
+            dataGridView.Rows[rowIndex].DefaultCellStyle.BackColor = GetRowBackColor(requestControlCommand.IsAllowed);
+        }
+
+        private void ProcessControlAccessCommand(ControlAccessCommand controlAccessCommand)
+        {
+            var rowIndex = GetRowIndex(controlAccessCommand.ClientId);
+            if (rowIndex < 0)
+                return;
+
+            if (controlAccessCommand.ClientId.Equals(_id) && !(bool)dataGridView["IsInputContollerColumn", rowIndex].Value  && controlAccessCommand.IsAllowed)
+            {
+                Invoke((Action) (() =>
+                    {
+                        //Хак, чтобы события правильно отрабатывали (в данном случае нужно только обновление gui без event'а)
+                        inputRadioButton.CheckedChanged -= RadioButtonOnCheckedChanged;
+                        inputRadioButton.Checked = true;
+                        inputRadioButton.CheckedChanged += RadioButtonOnCheckedChanged;
+                    }));
+            }
+            if (controlAccessCommand.ClientId.Equals(_id) && (bool)dataGridView["IsInputContollerColumn", rowIndex].Value && !controlAccessCommand.IsAllowed)
+            {
+                Invoke((Action)(() =>
+                {
+                    //Хак, чтобы события правильно отрабатывали (в данном случае нужно только обновление gui без event'а)
+                    inputRadioButton.CheckedChanged -= RadioButtonOnCheckedChanged;
+                    inputRadioButton.Checked = false;
+                    inputRadioButton.CheckedChanged += RadioButtonOnCheckedChanged;
+                }));
+            }
+            dataGridView["IsInputContollerColumn", rowIndex].Value = controlAccessCommand.IsAllowed;
+            dataGridView.Rows[rowIndex].DefaultCellStyle.BackColor = GetRowBackColor(false);
         }
 
         private void ProcessDiffCommand(DiffCommand diffCommand)

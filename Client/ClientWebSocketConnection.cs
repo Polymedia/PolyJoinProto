@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Common.Commands;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
@@ -17,7 +15,9 @@ namespace Polymedia.PolyJoin.Client
         public event EventHandler<SimpleEventArgs<InputCommand>> InputCommandReceived = delegate { }; 
         public event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
         public event EventHandler<SimpleEventArgs<PaintDeleteFigureCommand>> PaintDeleteFigureCommandRecieved = delegate { };
-        
+        public event EventHandler<SimpleEventArgs<RequestControlCommand>> RequestControlCommandReceived = delegate { };
+        public event EventHandler<SimpleEventArgs<ControlAccessCommand>> ControlAccessCommandReceived = delegate { }; 
+
         public ClientWebSocketConnection(IWebSocketConnection webSocketConnection)
             : base(webSocketConnection)
         {
@@ -55,6 +55,18 @@ namespace Polymedia.PolyJoin.Client
             SendCommand(command);
         }
 
+        public void ControlAccessCommand(string conferenceId, string presenterId, string clientId, bool isAllowed)
+        {
+            Command command = new ControlAccessCommand(conferenceId, presenterId, clientId, isAllowed);
+            SendCommand(command);
+        }
+
+        public void RequestControlCommand(string conferenceId, string clientId, bool isAllowed)
+        {
+            Command command = new RequestControlCommand(conferenceId, clientId, isAllowed);
+            SendCommand(command);
+        }
+
         protected override void OnReceivedCommand(Command command)
         {
             //TODO generate events on command received
@@ -65,15 +77,15 @@ namespace Polymedia.PolyJoin.Client
             {
                 case CommandName.State:
                     Console.WriteLine("Command State");
-                    StateCommandReceived.Invoke(this, new SimpleEventArgs<StateCommand>() { Value = (StateCommand)command });
+                    StateCommandReceived.Invoke(this, new SimpleEventArgs<StateCommand> { Value = (StateCommand)command });
                     break;
                 case CommandName.Diff:
                     Console.WriteLine("Command Diff");
-                    DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand>() { Value = (DiffCommand)command });
+                    DiffCommandReceived.Invoke(this, new SimpleEventArgs<DiffCommand> { Value = (DiffCommand)command });
                     break;
                 case CommandName.Participants:
                     Console.WriteLine("Command Participants");
-                    ParticipantsCommandReceived.Invoke(this, new SimpleEventArgs<ParticipantsCommand>() { Value = (ParticipantsCommand)command });
+                    ParticipantsCommandReceived.Invoke(this, new SimpleEventArgs<ParticipantsCommand> { Value = (ParticipantsCommand)command });
                     break;
                 case CommandName.Input:
                     Console.WriteLine("Command Input");
@@ -81,16 +93,25 @@ namespace Polymedia.PolyJoin.Client
                     break;
                 case CommandName.PaintAddFigure:
                     Console.WriteLine("Command PaintAddFigure");
-                    PaintAddFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintAddFigureCommand>() { Value = (PaintAddFigureCommand)command });
+                    PaintAddFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintAddFigureCommand> { Value = (PaintAddFigureCommand)command });
                     break;
                 case CommandName.PaintDeleteFigure:
                     Console.WriteLine("Command PaintDeleteFigure");
-                    PaintDeleteFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintDeleteFigureCommand>() { Value = (PaintDeleteFigureCommand)command });
+                    PaintDeleteFigureCommandRecieved.Invoke(this, new SimpleEventArgs<PaintDeleteFigureCommand> { Value = (PaintDeleteFigureCommand)command });
+                    break;
+                case CommandName.RequestControl:
+                    Console.WriteLine("Command RequestControl");
+                    RequestControlCommandReceived.Invoke(this, new SimpleEventArgs<RequestControlCommand> { Value = (RequestControlCommand)command });
+                    break;
+                case CommandName.ControlAccess:
+                    Console.WriteLine("Command ControlAccess");
+                    ControlAccessCommandReceived.Invoke(this, new SimpleEventArgs<ControlAccessCommand> { Value = (ControlAccessCommand)command });
                     break;
                 default:
                     Console.WriteLine("Unknown command");
                     break;
             }
         }
+
     }
 }

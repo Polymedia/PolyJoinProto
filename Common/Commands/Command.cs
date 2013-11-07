@@ -15,7 +15,9 @@ namespace Polymedia.PolyJoin.Common
         Participants,
         Input,
         PaintAddFigure,
-        PaintDeleteFigure
+        PaintDeleteFigure,
+        ControlAccess,
+        RequestControl
     }
 
     [Serializable]

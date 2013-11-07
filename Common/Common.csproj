@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\ControlAccessCommand.cs" />
     <Compile Include="Commands\DiffCommand.cs" />
     <Compile Include="Commands\DisconnectCommand.cs" />
     <Compile Include="Commands\InputCommand.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="Commands\PaintAddFigureCommand.cs" />
     <Compile Include="Commands\PaintDeleteFigureCommand.cs" />
     <Compile Include="Commands\QueryStateCommand.cs" />
+    <Compile Include="Commands\RequestControlCommand.cs" />
     <Compile Include="ConnectionWrapper.cs" />
     <Compile Include="IWebSocketConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
