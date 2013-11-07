@@ -35,6 +35,8 @@ namespace Client
         public event EventHandler<MouseEventArgs> DrawingMouseMove = delegate { };
         public event EventHandler<MouseEventArgs> DrawingMouseClick = delegate { };
 
+        private PictureBox _cursor;
+
         public TopMostForm()
         {
             InitializeComponent();
@@ -73,6 +75,19 @@ namespace Client
                 {
                     DrawingMouseClick.Invoke(sender, ea);
                 };
+
+            _cursor = pictureBox1;
+            _cursor.Width = Cursors.Arrow.Size.Width;
+            _cursor.Height = Cursors.Arrow.Size.Height;
+
+            _cursor.Location = new Point(0, 0);
+
+            Bitmap bitmap = new Bitmap(_cursor.Width, _cursor.Height);
+            using (Graphics g = Graphics.FromImage(bitmap))
+            {
+                Cursors.Default.Draw(g, new Rectangle(0, 0, Cursors.Arrow.Size.Width, Cursors.Arrow.Size.Height));
+            }
+            _cursor.Image = bitmap;
         }
 
         public void SetClickThrough(bool clickThrough)
@@ -82,6 +97,15 @@ namespace Client
                 SetWindowLong(Handle, GWL.ExStyle, initialWindowLong | 0x80000 | 0x20);
             else
                 SetWindowLong(Handle, GWL.ExStyle, initialWindowLong);
+        }
+
+        public void DrawCursor(int x, int y)
+        {
+            Invoke(new Action(() =>
+                {
+                    _cursor.Location = new Point(x, y);
+                }));
+            
         }
 
         public Image Image

@@ -154,8 +154,8 @@ namespace Painter
 
                     if (sender == pictureBox)
                     {
-                        x = e.X*_imageWidth/pictureBox.Width;
-                        y = e.Y*_imageHeight/pictureBox.Height;
+                        x = (int)(e.X * (float)_imageWidth / pictureBox.Width);
+                        y = (int)(e.Y * (float)_imageHeight / pictureBox.Height);
                     }
 
                     if ((DateTime.Now - _lastPointTime).TotalMilliseconds > 50)
@@ -187,8 +187,8 @@ namespace Painter
 
                     if (sender == pictureBox)
                     {
-                        x = e.X * _imageWidth / pictureBox.Width;
-                        y = e.Y * _imageHeight / pictureBox.Height;
+                        x = (int)(e.X * (float)_imageWidth / pictureBox.Width);
+                        y = (int)(e.Y * (float)_imageHeight / pictureBox.Height);
                     }
 
                     string removedFigureId = _painter.RemoveFigure(x, y);

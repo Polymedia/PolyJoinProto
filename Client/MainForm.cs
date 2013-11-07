@@ -398,21 +398,25 @@ namespace Client
                 switch (mouseInput.MouseInputType)
                 {
                     case MouseInput.MouseInputEnum.Move:
-                        MouseAPI.Move(x, y);
+                        //MouseAPI.Move(x, y);
+                        _topMostForm.DrawCursor(x, y);
                         break;
                     case MouseInput.MouseInputEnum.Down:
+                        _topMostForm.DrawCursor(x, y);
                         if (mouseInput.LeftButton)
                             MouseAPI.LeftButtonDown(x, y);
                         else
                             MouseAPI.RightButtonDown(x, y);
                         break;
                     case MouseInput.MouseInputEnum.Up:
+                        _topMostForm.DrawCursor(x, y);
                         if (mouseInput.LeftButton)
                             MouseAPI.LeftButtonUp(x, y);
                         else
                             MouseAPI.RightButtonUp(x, y);
                         break;
                     case MouseInput.MouseInputEnum.Click:
+                        _topMostForm.DrawCursor(x, y);
                         if (mouseInput.LeftButton)
                             MouseAPI.LeftButtonClick(x, y);
                         else
