@@ -37,8 +37,8 @@ namespace Client
             }
         }
 
-        private byte _delay;
-        public byte Delay // в ms (0 - 1000)
+        private int _delay;
+        public int Delay // в ms (0 - 1000)
         {
             get { return _delay; }
             set
@@ -644,5 +644,16 @@ namespace Client
             });
             _diffDetectThread.Start();
         }
+
+        private void trackBarQuality_Scroll(object sender, EventArgs e)
+        {
+            Quality = (byte)trackBarQuality.Value;
+        }
+
+        private void trackBarDelay_Scroll(object sender, EventArgs e)
+        {
+            Delay = trackBarDelay.Value;
+        }
+
     }
 }

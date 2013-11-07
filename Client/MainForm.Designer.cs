@@ -33,23 +33,31 @@
             this.connectionStateValueLabel = new System.Windows.Forms.Label();
             this.connectionStateLabel = new System.Windows.Forms.Label();
             this.leftPanel = new System.Windows.Forms.Panel();
+            this.groupBoxSettings = new System.Windows.Forms.GroupBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.trackBarDelay = new System.Windows.Forms.TrackBar();
+            this.trackBarQuality = new System.Windows.Forms.TrackBar();
             this.modeGroupBox = new System.Windows.Forms.GroupBox();
             this.inputRadioButton = new System.Windows.Forms.RadioButton();
             this.drawRadioButton = new System.Windows.Forms.RadioButton();
             this.silentRadioButton = new System.Windows.Forms.RadioButton();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.roleValueLabel = new System.Windows.Forms.Label();
-            this.roleLabel = new System.Windows.Forms.Label();
-            this.conferenceIdValueLabel = new System.Windows.Forms.Label();
-            this.conferenceIdlabel = new System.Windows.Forms.Label();
             this.IdColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IsPresenterColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.IsInputContollerColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.ColorColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.roleValueLabel = new System.Windows.Forms.Label();
+            this.roleLabel = new System.Windows.Forms.Label();
+            this.conferenceIdValueLabel = new System.Windows.Forms.Label();
+            this.conferenceIdlabel = new System.Windows.Forms.Label();
             this.tableLayoutPanel.SuspendLayout();
             this.topPanel.SuspendLayout();
             this.leftPanel.SuspendLayout();
+            this.groupBoxSettings.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarDelay)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarQuality)).BeginInit();
             this.modeGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
@@ -103,6 +111,7 @@
             // 
             // leftPanel
             // 
+            this.leftPanel.Controls.Add(this.groupBoxSettings);
             this.leftPanel.Controls.Add(this.modeGroupBox);
             this.leftPanel.Controls.Add(this.dataGridView);
             this.leftPanel.Controls.Add(this.roleValueLabel);
@@ -115,6 +124,58 @@
             this.leftPanel.Name = "leftPanel";
             this.leftPanel.Size = new System.Drawing.Size(294, 460);
             this.leftPanel.TabIndex = 2;
+            // 
+            // groupBoxSettings
+            // 
+            this.groupBoxSettings.Controls.Add(this.label2);
+            this.groupBoxSettings.Controls.Add(this.label1);
+            this.groupBoxSettings.Controls.Add(this.trackBarDelay);
+            this.groupBoxSettings.Controls.Add(this.trackBarQuality);
+            this.groupBoxSettings.Location = new System.Drawing.Point(12, 150);
+            this.groupBoxSettings.Name = "groupBoxSettings";
+            this.groupBoxSettings.Size = new System.Drawing.Size(270, 148);
+            this.groupBoxSettings.TabIndex = 10;
+            this.groupBoxSettings.TabStop = false;
+            this.groupBoxSettings.Text = "Settings";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(120, 78);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(34, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Delay";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(120, 18);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(39, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Quality";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // trackBarDelay
+            // 
+            this.trackBarDelay.Location = new System.Drawing.Point(8, 97);
+            this.trackBarDelay.Maximum = 1000;
+            this.trackBarDelay.Name = "trackBarDelay";
+            this.trackBarDelay.Size = new System.Drawing.Size(256, 45);
+            this.trackBarDelay.TabIndex = 1;
+            this.trackBarDelay.Scroll += new System.EventHandler(this.trackBarDelay_Scroll);
+            // 
+            // trackBarQuality
+            // 
+            this.trackBarQuality.Location = new System.Drawing.Point(8, 34);
+            this.trackBarQuality.Maximum = 100;
+            this.trackBarQuality.Name = "trackBarQuality";
+            this.trackBarQuality.Size = new System.Drawing.Size(256, 45);
+            this.trackBarQuality.TabIndex = 0;
+            this.trackBarQuality.Value = 100;
+            this.trackBarQuality.Scroll += new System.EventHandler(this.trackBarQuality_Scroll);
             // 
             // modeGroupBox
             // 
@@ -175,12 +236,52 @@
             this.IsInputContollerColumn,
             this.ColorColumn});
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.dataGridView.Location = new System.Drawing.Point(0, 149);
+            this.dataGridView.Location = new System.Drawing.Point(0, 304);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.ReadOnly = true;
             this.dataGridView.RowHeadersVisible = false;
-            this.dataGridView.Size = new System.Drawing.Size(294, 311);
+            this.dataGridView.Size = new System.Drawing.Size(294, 156);
             this.dataGridView.TabIndex = 8;
+            // 
+            // IdColumn
+            // 
+            this.IdColumn.DataPropertyName = "Id";
+            this.IdColumn.HeaderText = "Id";
+            this.IdColumn.Name = "IdColumn";
+            this.IdColumn.ReadOnly = true;
+            this.IdColumn.Visible = false;
+            // 
+            // NameColumn
+            // 
+            this.NameColumn.DataPropertyName = "Name";
+            this.NameColumn.HeaderText = "Name";
+            this.NameColumn.Name = "NameColumn";
+            this.NameColumn.ReadOnly = true;
+            // 
+            // IsPresenterColumn
+            // 
+            this.IsPresenterColumn.DataPropertyName = "IsPresenter";
+            this.IsPresenterColumn.HeaderText = "Is presenter";
+            this.IsPresenterColumn.Name = "IsPresenterColumn";
+            this.IsPresenterColumn.ReadOnly = true;
+            this.IsPresenterColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.IsPresenterColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // IsInputContollerColumn
+            // 
+            this.IsInputContollerColumn.DataPropertyName = "IsInputController";
+            this.IsInputContollerColumn.HeaderText = "Is input contoller";
+            this.IsInputContollerColumn.Name = "IsInputContollerColumn";
+            this.IsInputContollerColumn.ReadOnly = true;
+            this.IsInputContollerColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // ColorColumn
+            // 
+            this.ColorColumn.DataPropertyName = "BrushArgb";
+            this.ColorColumn.HeaderText = "Color";
+            this.ColorColumn.Name = "ColorColumn";
+            this.ColorColumn.ReadOnly = true;
+            this.ColorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
             // roleValueLabel
             // 
@@ -215,47 +316,7 @@
             this.conferenceIdlabel.Size = new System.Drawing.Size(79, 13);
             this.conferenceIdlabel.TabIndex = 4;
             this.conferenceIdlabel.Text = "Conference ID:";
-            
             // 
-            // IdColumn
-            // 
-            this.IdColumn.DataPropertyName = "Id";
-            this.IdColumn.HeaderText = "Id";
-            this.IdColumn.Name = "IdColumn";
-            this.IdColumn.ReadOnly = true;
-            this.IdColumn.Visible = false;            
-            // 
-            // NameColumn
-            // 
-            this.NameColumn.DataPropertyName = "Name";
-            this.NameColumn.HeaderText = "Name";
-            this.NameColumn.Name = "NameColumn";
-            this.NameColumn.ReadOnly = true;
-            // 
-            // IsPresenterColumn
-            // 
-            this.IsPresenterColumn.DataPropertyName = "IsPresenter";
-            this.IsPresenterColumn.HeaderText = "Is presenter";
-            this.IsPresenterColumn.Name = "IsPresenterColumn";
-            this.IsPresenterColumn.ReadOnly = true;
-            this.IsPresenterColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.IsPresenterColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // IsInputContollerColumn
-            // 
-            this.IsInputContollerColumn.DataPropertyName = "IsInputController";
-            this.IsInputContollerColumn.HeaderText = "Is input contoller";
-            this.IsInputContollerColumn.Name = "IsInputContollerColumn";
-            this.IsInputContollerColumn.ReadOnly = true;
-            this.IsInputContollerColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // ColorColumn
-            // 
-            this.ColorColumn.DataPropertyName = "BrushArgb";
-            this.ColorColumn.HeaderText = "Color";
-            this.ColorColumn.Name = "ColorColumn";
-            this.ColorColumn.ReadOnly = true;
-            this.ColorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -270,6 +331,10 @@
             this.topPanel.PerformLayout();
             this.leftPanel.ResumeLayout(false);
             this.leftPanel.PerformLayout();
+            this.groupBoxSettings.ResumeLayout(false);
+            this.groupBoxSettings.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarDelay)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarQuality)).EndInit();
             this.modeGroupBox.ResumeLayout(false);
             this.modeGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
@@ -298,6 +363,11 @@
         private System.Windows.Forms.DataGridViewCheckBoxColumn IsPresenterColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn IsInputContollerColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColorColumn;
+        private System.Windows.Forms.GroupBox groupBoxSettings;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TrackBar trackBarDelay;
+        private System.Windows.Forms.TrackBar trackBarQuality;
 
     }
 }
