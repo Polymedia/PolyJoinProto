@@ -292,7 +292,7 @@ namespace Client
                     {
                         connectionStateValueLabel.Text = "Connected";
 
-                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(SystemInformation.VirtualScreen.Width * ScreenshotScale), (int)(SystemInformation.VirtualScreen.Height * ScreenshotScale), ClientName);
+                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(Screen.PrimaryScreen.WorkingArea.Width * ScreenshotScale), (int)(Screen.PrimaryScreen.WorkingArea.Height * ScreenshotScale), ClientName);
                     }
                     else
                     {
@@ -581,22 +581,22 @@ namespace Client
                 {
                     try
                     {
-                        Bitmap screenShot = new Bitmap(SystemInformation.VirtualScreen.Width,
-                                                       SystemInformation.VirtualScreen.Height);
+                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.WorkingArea.Width,
+                                                       Screen.PrimaryScreen.WorkingArea.Height);
 
                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
                         {
                             screenShotGraphics.CopyFromScreen(SystemInformation.VirtualScreen.X, SystemInformation.VirtualScreen.Y, 0, 0,
                                                               new Size(
-                                                                  SystemInformation.VirtualScreen.Width,
-                                                                  SystemInformation.VirtualScreen.Height));
+                                                                  Screen.PrimaryScreen.WorkingArea.Width,
+                                                                  Screen.PrimaryScreen.WorkingArea.Height));
 
                             if (Math.Abs(ScreenshotScale - 1) > 0.01)
                                 screenShot = new Bitmap(screenShot,
                                                         (int)
-                                                        (SystemInformation.VirtualScreen.Width * ScreenshotScale),
+                                                        (Screen.PrimaryScreen.WorkingArea.Width * ScreenshotScale),
                                                         (int)
-                                                        (SystemInformation.VirtualScreen.Height * ScreenshotScale));
+                                                        (Screen.PrimaryScreen.WorkingArea.Height * ScreenshotScale));
                         }
 
                         DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
