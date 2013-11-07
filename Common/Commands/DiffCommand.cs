@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 
-namespace Polymedia.PolyJoin.Common
+namespace Common.Commands
 {
     [Serializable]
     public class DiffCommand: Command

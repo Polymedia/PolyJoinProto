@@ -95,7 +95,7 @@ namespace Polymedia.PolyJoin.Client
         {
             try
             {
-                Debug.Assert(data.Length <= 65536, "Sending big data to server");
+                Debug.Assert(data.Length <= 65536, "Sending big data to server" + data.Length);
 
                 _webSocket.Send(data, 0, data.Length);
             }

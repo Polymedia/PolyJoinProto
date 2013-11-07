@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -21,11 +22,14 @@ namespace DifferenceLib
             Y = rectangle.Y;
             Width = rectangle.Width;
             Height = rectangle.Height;
-            ImageBytes = DiffContainer.ImageToByteArray(bitmap);
+            //ImageBytes = DiffContainer.ImageToByteArray(bitmap);
+            ImageBytes = DiffContainer.ImageToByte2(bitmap);
         }
 
         public DiffItem(KeyValuePair<Rectangle, Bitmap> dataItem)
             : this(dataItem.Key, dataItem.Value)
         {}
+
+       
     }
 }

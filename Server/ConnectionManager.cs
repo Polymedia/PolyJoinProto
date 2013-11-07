@@ -14,6 +14,11 @@ namespace Server
         public static event EventHandler<SimpleEventArgs<InputCommand>> InputCommandReceived = delegate { };
         public static event EventHandler<SimpleEventArgs<PaintAddFigureCommand>> PaintAddFigureCommandRecieved = delegate { };
         public static event EventHandler<SimpleEventArgs<PaintDeleteFigureCommand>> PaintDeleteFigureCommandRecieved = delegate { };
+        public static event EventHandler<SimpleEventArgs<ControlAccessCommand>> ControllAccessCommandReceived = delegate
+            { };
+
+        public static event EventHandler<SimpleEventArgs<RequestControlCommand>> RequestControlCommandReceived =
+            delegate { };
 
         public static void AddConnection(Connection connection)
         {
@@ -29,6 +34,18 @@ namespace Server
             serverWebSocketConnection.InputCommandReceived +=ServerWebSocketConnectionOnInputCommandReceived;
             serverWebSocketConnection.PaintAddFigureCommandRecieved+=ServerWebSocketConnectionPaintAddFigureCommandRecieved;
             serverWebSocketConnection.PaintDeleteFigureCommandRecieved += ServerWebSocketConnectionPaintDeleteFigureCommandRecieved;
+            serverWebSocketConnection.ControlAccessCommandReceived += ServerWebSocketConnectionOnControlAccessCommandReceived;
+            serverWebSocketConnection.RequestControllCommandReceived += ServerWebSocketConnectionOnRequestControllCommandReceived;
+        }
+
+        private static void ServerWebSocketConnectionOnRequestControllCommandReceived(object sender, SimpleEventArgs<RequestControlCommand> simpleEventArgs)
+        {
+            RequestControlCommandReceived.Invoke(sender, simpleEventArgs);
+        }
+
+        private static void ServerWebSocketConnectionOnControlAccessCommandReceived(object sender, SimpleEventArgs<ControlAccessCommand> simpleEventArgs)
+        {
+            ControllAccessCommandReceived.Invoke(sender, simpleEventArgs);
         }
 
         private static void ServerWebSocketConnectionOnInputCommandReceived(object sender, SimpleEventArgs<InputCommand> simpleEventArgs)

@@ -24,5 +24,6 @@ namespace Polymedia.PolyJoin.Common
         public int BrushArgb { get; set; }
         public string Name { get; set; }
         public bool IsPresenter { get; set; }
+        public bool IsInputController { get; set; }
     }
 }

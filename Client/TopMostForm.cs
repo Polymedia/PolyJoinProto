@@ -41,8 +41,8 @@ namespace Client
         {
             InitializeComponent();
 
-            Width = SystemInformation.VirtualScreen.Width;
-            Height = SystemInformation.VirtualScreen.Height;
+            Width = Screen.PrimaryScreen.WorkingArea.Width;
+            Height = Screen.PrimaryScreen.WorkingArea.Height;
 
             Location = new Point(0, 0);
 

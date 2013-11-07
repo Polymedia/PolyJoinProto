@@ -47,7 +47,6 @@ namespace Client
 
         public float ScreenshotScale { get; set; }
         public int ScreenshotTimeout { get; set; }
-        public byte JpegQuality { get; set; }
 
         public string ConferenceId { get; set; }
         public string ClientName { get; set; }
@@ -190,6 +189,7 @@ namespace Client
 
         private void RadioButtonOnCheckedChanged(object sender, EventArgs eventArgs)
         {
+<<<<<<< HEAD
             if (sender == inputRadioButton)
             {
                 if (inputRadioButton.Checked)
@@ -206,6 +206,9 @@ namespace Client
                 }
             }
 
+            if(silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
+            if (drawRadioButton.Checked) _paintControl.Mode = PaintControlModes.Draw;
+=======
             if (silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
             if (drawRadioButton.Checked)
             {
@@ -213,6 +216,7 @@ namespace Client
                     _topMostForm.SetClickThrough(false);
                 _paintControl.Mode = PaintControlModes.Draw;
             }
+>>>>>>> 2606801790f22fdbf383f72db88e597ae07f8514
             if (inputRadioButton.Checked) _paintControl.Mode = PaintControlModes.Input;
         }
 
@@ -293,7 +297,7 @@ namespace Client
                     {
                         connectionStateValueLabel.Text = "Connected";
 
-                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(Screen.PrimaryScreen.WorkingArea.Width * ScreenshotScale), (int)(Screen.PrimaryScreen.WorkingArea.Height * ScreenshotScale), ClientName);
+                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(SystemInformation.VirtualScreen.Width * ScreenshotScale), (int)(SystemInformation.VirtualScreen.Height * ScreenshotScale), ClientName);
                     }
                     else
                     {
@@ -517,25 +521,21 @@ namespace Client
                 switch (mouseInput.MouseInputType)
                 {
                     case MouseInput.MouseInputEnum.Move:
-                        //MouseAPI.Move(x, y);
-                        _topMostForm.DrawCursor(x, y);
+                        MouseAPI.Move(x, y);
                         break;
                     case MouseInput.MouseInputEnum.Down:
-                        _topMostForm.DrawCursor(x, y);
                         if (mouseInput.LeftButton)
                             MouseAPI.LeftButtonDown(x, y);
                         else
                             MouseAPI.RightButtonDown(x, y);
                         break;
                     case MouseInput.MouseInputEnum.Up:
-                        _topMostForm.DrawCursor(x, y);
                         if (mouseInput.LeftButton)
                             MouseAPI.LeftButtonUp(x, y);
                         else
                             MouseAPI.RightButtonUp(x, y);
                         break;
                     case MouseInput.MouseInputEnum.Click:
-                        _topMostForm.DrawCursor(x, y);
                         if (mouseInput.LeftButton)
                             MouseAPI.LeftButtonClick(x, y);
                         else
@@ -577,8 +577,7 @@ namespace Client
             _diffDetectThread = new Thread(() =>
             {
 
-                IDiffDetector _diffDetector = new CustomDiffDetector(JpegQuality);
-                
+                IDiffDetector _diffDetector = new CustomDiffDetector();
                 //IDiffDetector _diffDetector = new DiffDetector();
                 //IDiffDetector _diffDetector = new DiffDetectorOpenCvSharp();
 
@@ -587,22 +586,22 @@ namespace Client
                 {
                     try
                     {
-                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.WorkingArea.Width,
-                                                       Screen.PrimaryScreen.WorkingArea.Height);
+                        Bitmap screenShot = new Bitmap(SystemInformation.VirtualScreen.Width,
+                                                       SystemInformation.VirtualScreen.Height);
 
                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
                         {
-                            screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
+                            screenShotGraphics.CopyFromScreen(SystemInformation.VirtualScreen.X, SystemInformation.VirtualScreen.Y, 0, 0,
                                                               new Size(
-                                                                  Screen.PrimaryScreen.WorkingArea.Width,
-                                                                  Screen.PrimaryScreen.WorkingArea.Height));
+                                                                  SystemInformation.VirtualScreen.Width,
+                                                                  SystemInformation.VirtualScreen.Height));
 
                             if (Math.Abs(ScreenshotScale - 1) > 0.01)
                                 screenShot = new Bitmap(screenShot,
                                                         (int)
-                                                        (Screen.PrimaryScreen.WorkingArea.Width * ScreenshotScale),
+                                                        (SystemInformation.VirtualScreen.Width * ScreenshotScale),
                                                         (int)
-                                                        (Screen.PrimaryScreen.WorkingArea.Height * ScreenshotScale));
+                                                        (SystemInformation.VirtualScreen.Height * ScreenshotScale));
                         }
 
                         DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);

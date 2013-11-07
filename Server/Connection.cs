@@ -78,7 +78,7 @@ namespace Server
             //async/await?
             try
             {
-                Debug.Assert(data.Length <= 65536, "Sending big data to client");
+                Debug.Assert(data.Length <= 65536, "Sending big data to client" + data.Length);
                 Send(data);
             }
             catch

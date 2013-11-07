@@ -34,6 +34,7 @@
             this.connectionStateLabel = new System.Windows.Forms.Label();
             this.leftPanel = new System.Windows.Forms.Panel();
             this.modeGroupBox = new System.Windows.Forms.GroupBox();
+            this.drawFullScreenRadioButton = new System.Windows.Forms.RadioButton();
             this.inputRadioButton = new System.Windows.Forms.RadioButton();
             this.drawRadioButton = new System.Windows.Forms.RadioButton();
             this.silentRadioButton = new System.Windows.Forms.RadioButton();
@@ -42,11 +43,14 @@
             this.roleLabel = new System.Windows.Forms.Label();
             this.conferenceIdValueLabel = new System.Windows.Forms.Label();
             this.conferenceIdlabel = new System.Windows.Forms.Label();
+<<<<<<< HEAD
             this.IdColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IsPresenterColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.IsInputContollerColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.ColorColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+=======
+>>>>>>> 2606801790f22fdbf383f72db88e597ae07f8514
             this.tableLayoutPanel.SuspendLayout();
             this.topPanel.SuspendLayout();
             this.leftPanel.SuspendLayout();
@@ -127,6 +131,16 @@
             this.modeGroupBox.TabIndex = 9;
             this.modeGroupBox.TabStop = false;
             this.modeGroupBox.Text = "Mode";
+            // 
+            // drawFullScreenRadioButton
+            // 
+            this.drawFullScreenRadioButton.AutoSize = true;
+            this.drawFullScreenRadioButton.Location = new System.Drawing.Point(8, 65);
+            this.drawFullScreenRadioButton.Name = "drawFullScreenRadioButton";
+            this.drawFullScreenRadioButton.Size = new System.Drawing.Size(169, 17);
+            this.drawFullScreenRadioButton.TabIndex = 3;
+            this.drawFullScreenRadioButton.Text = "Draw full screen (Esc to leave)";
+            this.drawFullScreenRadioButton.UseVisualStyleBackColor = true;
             // 
             // inputRadioButton
             // 
@@ -215,15 +229,15 @@
             this.conferenceIdlabel.Size = new System.Drawing.Size(79, 13);
             this.conferenceIdlabel.TabIndex = 4;
             this.conferenceIdlabel.Text = "Conference ID:";
-            
             // 
+<<<<<<< HEAD
             // IdColumn
             // 
             this.IdColumn.DataPropertyName = "Id";
             this.IdColumn.HeaderText = "Id";
             this.IdColumn.Name = "IdColumn";
             this.IdColumn.ReadOnly = true;
-            this.IdColumn.Visible = false;            
+            this.IdColumn.Visible = false;
             // 
             // NameColumn
             // 
@@ -256,6 +270,9 @@
             this.ColorColumn.Name = "ColorColumn";
             this.ColorColumn.ReadOnly = true;
             this.ColorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            // 
+=======
+>>>>>>> 2606801790f22fdbf383f72db88e597ae07f8514
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -293,11 +310,15 @@
         private System.Windows.Forms.RadioButton inputRadioButton;
         private System.Windows.Forms.RadioButton drawRadioButton;
         private System.Windows.Forms.RadioButton silentRadioButton;
+<<<<<<< HEAD
+        private System.Windows.Forms.RadioButton drawFullScreenRadioButton;
         private System.Windows.Forms.DataGridViewTextBoxColumn IdColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn NameColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn IsPresenterColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn IsInputContollerColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColorColumn;
+=======
+>>>>>>> 2606801790f22fdbf383f72db88e597ae07f8514
 
     }
 }
