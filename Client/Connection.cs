@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using Polymedia.PolyJoin.Common;
 using WebSocket4Net;
+using DifferenceLib;
 
 namespace Polymedia.PolyJoin.Client
 {
@@ -91,11 +92,54 @@ namespace Polymedia.PolyJoin.Client
             return true;
         }
 
+        private DateTime _startTime;
+        private long _currentByteLength;
+
         public bool SendData(byte[] data)
         {
             try
             {
                 Debug.Assert(data.Length <= 65536, "Sending big data to server" + data.Length);
+
+                if (_startTime == default(DateTime))
+                    _startTime = DateTime.Now;
+                
+                if (_startTime.Subtract(DateTime.Now).TotalSeconds > 3)
+                {
+                    var _100kb = 102400;
+
+                    if (_currentByteLength < _100kb)
+                    {
+                        DiffContainer.Init(100);
+                    }
+                    else if (_currentByteLength < 3 * _100kb)
+                    {
+                        DiffContainer.Init(70);
+                    }
+                    else if (_currentByteLength < 5 * _100kb)
+                    {
+                        DiffContainer.Init(50);
+                    }
+                    else if (_currentByteLength < 8 * _100kb)
+                    {
+                        DiffContainer.Init(30);
+                    }
+                    else if (_currentByteLength < 13 * _100kb)
+                    {
+                        DiffContainer.Init(10);
+                    }
+                    else
+                    {
+                        DiffContainer.Init(0);
+                    }
+
+                    _currentByteLength = data.Length;
+                    _startTime = default(DateTime);
+                }
+                else
+                {
+                    _currentByteLength += data.Length;
+                }
 
                 _webSocket.Send(data, 0, data.Length);
             }
