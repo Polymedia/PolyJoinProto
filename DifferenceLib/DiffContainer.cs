@@ -16,6 +16,40 @@ namespace DifferenceLib
         public long Elapsed { get; set; }
 
         public Dictionary<Rectangle, Bitmap> Data = new Dictionary<Rectangle, Bitmap>();
+        static ImageCodecInfo jgpEncoder;
+        static EncoderParameters myEncoderParameters;
+        static DiffContainer()
+        {
+            jgpEncoder = GetEncoder(ImageFormat.Jpeg);
+
+            // Create an Encoder object based on the GUID
+            // for the Quality parameter category.
+            System.Drawing.Imaging.Encoder myEncoder =
+                System.Drawing.Imaging.Encoder.Quality;
+
+            // Create an EncoderParameters object.
+            // An EncoderParameters object has an array of EncoderParameter
+            // objects. In this case, there is only one
+            // EncoderParameter object in the array.
+            myEncoderParameters = new EncoderParameters(1);
+
+            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder,
+                80L);
+            myEncoderParameters.Param[0] = myEncoderParameter;
+        }
+
+        private static ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+            return null;
+        }
 
         public static List<byte[]> ContainerToByteContainer(DiffContainer cont)
         {
@@ -124,10 +158,29 @@ namespace DifferenceLib
         {
             using (MemoryStream ms = new MemoryStream())
             {
-                imageIn.Save(ms, ImageFormat.Jpeg);
+              imageIn.Save(ms, jgpEncoder, myEncoderParameters);
+                //imageIn.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
                 return ms.ToArray();
             }
         }
+
+        public static byte[] ImageToByte2(Image img)
+        {
+            byte[] byteArray = new byte[0];
+            using (MemoryStream stream = new MemoryStream())
+            {
+                //img.Save(stream, jgpEncoder, myEncoderParameters);
+                img.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                stream.Close();
+                byteArray = stream.ToArray();
+            }
+
+            return byteArray;
+        }
+
+
+
+
 
         public static Dictionary<Rectangle, Bitmap> Split(KeyValuePair<Rectangle, Bitmap> originalImage, int maxSize)
         {
@@ -148,18 +201,25 @@ namespace DifferenceLib
             if (originalImage.Value.Width > originalImage.Value.Height)
             {
                 //split vertically
-                firstBitmap = new Bitmap(originalImage.Value.Width/2, originalImage.Value.Height);
-                secondBitmap = new Bitmap(originalImage.Value.Width/2, originalImage.Value.Height);
 
-                Graphics g1 = Graphics.FromImage(firstBitmap);
-                g1.DrawImage(originalImage.Value, 0, 0,
-                             new Rectangle(0, 0, originalImage.Value.Width/2, originalImage.Value.Height),
-                             GraphicsUnit.Pixel);
+                AForge.Imaging.Filters.Crop crop1 = new AForge.Imaging.Filters.Crop(new Rectangle(0, 0, originalImage.Value.Width / 2, originalImage.Value.Height));
+                AForge.Imaging.Filters.Crop crop2 = new AForge.Imaging.Filters.Crop(new Rectangle(originalImage.Value.Width / 2, 0, originalImage.Value.Width / 2, originalImage.Value.Height));
 
-                Graphics g2 = Graphics.FromImage(secondBitmap);
-                g2.DrawImage(originalImage.Value, 0, 0,
-                             new Rectangle(originalImage.Value.Width / 2, 0, originalImage.Value.Width / 2, originalImage.Value.Height),
-                             GraphicsUnit.Pixel);
+                firstBitmap = crop1.Apply(originalImage.Value);
+                secondBitmap = crop2.Apply(originalImage.Value);
+
+                //firstBitmap = new Bitmap(originalImage.Value.Width/2, originalImage.Value.Height);
+                //secondBitmap = new Bitmap(originalImage.Value.Width/2, originalImage.Value.Height);
+
+                //Graphics g1 = Graphics.FromImage(firstBitmap);
+                //g1.DrawImage(originalImage.Value, 0, 0,
+                //             new Rectangle(0, 0, originalImage.Value.Width/2, originalImage.Value.Height),
+                //             GraphicsUnit.Pixel);
+
+                //Graphics g2 = Graphics.FromImage(secondBitmap);
+                //g2.DrawImage(originalImage.Value, 0, 0,
+                //             new Rectangle(originalImage.Value.Width / 2, 0, originalImage.Value.Width / 2, originalImage.Value.Height),
+                //             GraphicsUnit.Pixel);
 
                 r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width/2,
                                    originalImage.Key.Height);
@@ -171,18 +231,26 @@ namespace DifferenceLib
             {
                 //split horizontally
 
-                firstBitmap = new Bitmap(originalImage.Value.Width, originalImage.Value.Height/2);
-                secondBitmap = new Bitmap(originalImage.Value.Width, originalImage.Value.Height/2);
 
-                Graphics g1 = Graphics.FromImage(firstBitmap);
-                g1.DrawImage(originalImage.Value, 0, 0,
-                             new Rectangle(0, 0, originalImage.Value.Width, originalImage.Value.Height/2),
-                             GraphicsUnit.Pixel);
+                AForge.Imaging.Filters.Crop crop1 = new AForge.Imaging.Filters.Crop(new Rectangle(0, 0, originalImage.Value.Width, originalImage.Value.Height / 2));
+                AForge.Imaging.Filters.Crop crop2 = new AForge.Imaging.Filters.Crop(new Rectangle(0, originalImage.Value.Height / 2, originalImage.Value.Width, originalImage.Value.Height / 2));
 
-                Graphics g2 = Graphics.FromImage(secondBitmap);
-                g2.DrawImage(originalImage.Value, 0, 0,
-                             new Rectangle(0, originalImage.Value.Height/2, originalImage.Value.Width, originalImage.Value.Height/2),
-                             GraphicsUnit.Pixel);
+                firstBitmap = crop1.Apply(originalImage.Value);
+                secondBitmap = crop2.Apply(originalImage.Value);
+
+
+                //firstBitmap = new Bitmap(originalImage.Value.Width, originalImage.Value.Height/2);
+                //secondBitmap = new Bitmap(originalImage.Value.Width, originalImage.Value.Height/2);
+
+                //Graphics g1 = Graphics.FromImage(firstBitmap);
+                //g1.DrawImage(originalImage.Value, 0, 0,
+                //             new Rectangle(0, 0, originalImage.Value.Width, originalImage.Value.Height/2),
+                //             GraphicsUnit.Pixel);
+
+                //Graphics g2 = Graphics.FromImage(secondBitmap);
+                //g2.DrawImage(originalImage.Value, 0, 0,
+                //             new Rectangle(0, originalImage.Value.Height/2, originalImage.Value.Width, originalImage.Value.Height/2),
+                //             GraphicsUnit.Pixel);
 
                 r1 = new Rectangle(originalImage.Key.X, originalImage.Key.Y, originalImage.Key.Width,
                                    originalImage.Key.Height/2);
@@ -200,7 +268,7 @@ namespace DifferenceLib
         {
             if (originalImagesDict != null && originalImagesDict.Count > 0)
                 return
-                    originalImagesDict.Select(p => Split(p, maxSize))
+                    originalImagesDict.Select(p => Split(p, maxSize)).AsParallel()
                                       .Aggregate((d1, d2) => d1.Concat(d2).ToDictionary(p => p.Key, p => p.Value));
             else return originalImagesDict;
         }

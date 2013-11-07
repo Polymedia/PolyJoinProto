@@ -1,6 +1,6 @@
-﻿namespace Painter
+﻿namespace Tester
 {
-    partial class FullScreenForm
+    partial class Form1
     {
         /// <summary>
         /// Required designer variable.
@@ -41,20 +41,15 @@
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
-            // FullScreenForm
+            // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(284, 261);
             this.Controls.Add(this.pictureBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FullScreenForm";
-            this.ShowInTaskbar = false;
-            this.Text = "FullScreenForm";
-            this.TopMost = true;
-            this.TransparencyKey = System.Drawing.Color.White;
-            this.VisibleChanged += new System.EventHandler(this.FullScreenForm_VisibleChanged);
+            this.Name = "Form1";
+            this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
@@ -65,3 +60,4 @@
         private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
+

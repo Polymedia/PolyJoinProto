@@ -189,6 +189,7 @@ namespace Client
 
         private void RadioButtonOnCheckedChanged(object sender, EventArgs eventArgs)
         {
+<<<<<<< HEAD
             if (sender == inputRadioButton)
             {
                 if (inputRadioButton.Checked)
@@ -205,6 +206,9 @@ namespace Client
                 }
             }
 
+            if(silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
+            if (drawRadioButton.Checked) _paintControl.Mode = PaintControlModes.Draw;
+=======
             if (silentRadioButton.Checked) _paintControl.Mode = PaintControlModes.Silent;
             if (drawRadioButton.Checked)
             {
@@ -212,6 +216,7 @@ namespace Client
                     _topMostForm.SetClickThrough(false);
                 _paintControl.Mode = PaintControlModes.Draw;
             }
+>>>>>>> 2606801790f22fdbf383f72db88e597ae07f8514
             if (inputRadioButton.Checked) _paintControl.Mode = PaintControlModes.Input;
         }
 
