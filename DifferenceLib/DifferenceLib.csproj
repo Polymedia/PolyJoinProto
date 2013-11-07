@@ -68,10 +68,10 @@
       <HintPath>..\Lib\ImageResizer.dll</HintPath>
     </Reference>
     <Reference Include="OpenCvSharp">
-      <HintPath>..\..\..\..\..\Downloads\OpenCvSharp-2.4.5-x86-20130711\OpenCvSharp.dll</HintPath>
+      <HintPath>..\Lib\OpenCvSharp.dll</HintPath>
     </Reference>
     <Reference Include="OpenCvSharp.Gpu">
-      <HintPath>..\..\..\..\..\Downloads\OpenCvSharp-2.4.5-x86-20130711\OpenCvSharp.Gpu.dll</HintPath>
+      <HintPath>..\Lib\OpenCvSharp.Gpu.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
