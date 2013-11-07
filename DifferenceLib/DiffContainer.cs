@@ -34,7 +34,7 @@ namespace DifferenceLib
             myEncoderParameters = new EncoderParameters(1);
 
             EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder,
-                80L);
+                60L);
             myEncoderParameters.Param[0] = myEncoderParameter;
         }
 
