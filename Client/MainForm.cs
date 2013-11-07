@@ -11,6 +11,8 @@ using System.Windows.Forms;
 using DifferenceLib;
 using Polymedia.PolyJoin.Common;
 using Painter;
+using System.Diagnostics;
+using System.IO;
 
 namespace Polymedia.PolyJoin.Client
 {
@@ -304,12 +306,19 @@ namespace Polymedia.PolyJoin.Client
 
         private void ProcessDiffCommand(DiffCommand diffCommand)
         {
+            //_diffFrame = new Bitmap(_diffFrame.Width, _diffFrame.Height);
             using (Graphics diffFrameGraphics = Graphics.FromImage(_diffFrame))
             {
                 diffFrameGraphics.DrawImage(
                     DiffContainer.ByteArrayToImage(diffCommand.DiffItem.ImageBytes),
                     diffCommand.DiffItem.X, diffCommand.DiffItem.Y,
                     diffCommand.DiffItem.Width, diffCommand.DiffItem.Height);
+
+                //diffFrameGraphics.DrawRectangle(Pens.Red,new Rectangle(
+                //    diffCommand.DiffItem.X,
+                //    diffCommand.DiffItem.Y,
+                //    diffCommand.DiffItem.Width,
+                //    diffCommand.DiffItem.Height));
             }
         }
 
@@ -358,14 +367,21 @@ namespace Polymedia.PolyJoin.Client
 
             _diffDetectThread = new Thread(() =>
             {
+
                 IDiffDetector _diffDetector = new CustomDiffDetector();
+                //IDiffDetector _diffDetector = new DiffDetector();
+                //IDiffDetector _diffDetector = new DiffDetectorOpenCvSharp();
+
+
                 while (_runDiffDetectThread)
                 {
                     try
                     {
+
+                        
+
                         Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
                                                        Screen.PrimaryScreen.Bounds.Height);
-
                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
                         {
                             screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
@@ -380,9 +396,10 @@ namespace Polymedia.PolyJoin.Client
                                                         (int)
                                                         (Screen.PrimaryScreen.Bounds.Height * ScreenshotScale));
                         }
+
                         DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
 
-                        diffContainer.Data = DiffContainer.Split(diffContainer.Data, 40000);
+                        diffContainer.Data = DiffContainer.Split(diffContainer.Data, 44000);
 
                         foreach (var s in diffContainer.Data)
                             ClientWebSocketConnection.SendDiff(ConferenceId, new DiffItem(s));
@@ -391,7 +408,7 @@ namespace Polymedia.PolyJoin.Client
                     {
                         Console.WriteLine("_diffDetectThread : " + ex.Message );
                     }
-                    Thread.Sleep(ScreenshotTimeout);
+                    //Thread.Sleep(ScreenshotTimeout);
                 }
             });
             _diffDetectThread.Start();

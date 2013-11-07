@@ -7,6 +7,8 @@ using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using OpenCvSharp;
+using System.Linq;
 
 namespace DifferenceLib
 {
@@ -47,30 +49,30 @@ namespace DifferenceLib
                 {
                     Contour<Point> contour = contours.ApproxPoly(contours.Perimeter * 0.001);
                     if (contour.Area > 100)
-                      //  if (contour.Total > 5)
-                        {
-                            Rectangle rect = contour.BoundingRectangle;
+                    //  if (contour.Total > 5)
+                    {
+                        Rectangle rect = contour.BoundingRectangle;
 
-                            rect.X -= 1;
-                            rect.Y -= 1;
-                            rect.Width += 2;
-                            rect.Height += 2;
+                        rect.X -= 1;
+                        rect.Y -= 1;
+                        rect.Width += 2;
+                        rect.Height += 2;
 
-                                var part = Frame.GetSubRect(rect);
+                        var part = Frame.GetSubRect(rect);
 
-                                //var j = ImageResizer.ImageBuilder.Current.Build(part.ToBitmap(),
-                                //    new ImageResizer.ResizeSettings(
-                                //        "maxwidth=" + part.Width / CompressRate +
-                                //        "&maxheight=" + part.Height +
-                                //        "&format=jpg&quality=20"
-                                //        ));
+                        //var j = ImageResizer.ImageBuilder.Current.Build(part.ToBitmap(),
+                        //    new ImageResizer.ResizeSettings(
+                        //        "maxwidth=" + part.Width / CompressRate +
+                        //        "&maxheight=" + part.Height +
+                        //        "&format=jpg&quality=20"
+                        //        ));
 
-                                var j = part.ToBitmap();
+                        var j = part.ToBitmap();
 
-                                container.Data.Add(rect, j);
+                        container.Data.Add(rect, j);
 
 
-                        }
+                    }
                 }
 
 
@@ -116,7 +118,7 @@ namespace DifferenceLib
 
             Rectangle[] rects = bc.GetObjectsRectangles();
 
-          
+
 
             foreach (Rectangle rect in rects)
             {
@@ -147,14 +149,16 @@ namespace DifferenceLib
         }
     }
 
+
+
     public class CustomDiffDetector : IDiffDetector
     {
         private Bitmap _oldImage;
 
         public DiffContainer GetDiffs(Bitmap newFrame, int compressRate)
         {
-             if (_oldImage == null || _oldImage.Height != newFrame.Height) 
-                 _oldImage = new Bitmap(newFrame.Width, newFrame.Height);
+            if (_oldImage == null || _oldImage.Height != newFrame.Height)
+                _oldImage = new Bitmap(newFrame.Width, newFrame.Height);
 
             var diffContainer = new DiffContainer();
 
@@ -164,29 +168,31 @@ namespace DifferenceLib
             var oldBitmapData = _oldImage.LockBits(new Rectangle(0, 0, _oldImage.Width, _oldImage.Height),
                                                    ImageLockMode.ReadOnly,
                                                    PixelFormat.Format32bppArgb);
-                  
+
             var startY = 0;
             var startX = 0;
             var endY = newFrame.Height - 1;
             var endX = newFrame.Width - 1;
+            var inc = 4;
 
             unsafe
             {
-
-                for (int j = 0; j < newFrame.Height; ++j)
+                var identical = true;
+                for (int j = 0; j < newFrame.Height - inc; j += inc)
                 {
                     var needBreak = false;
-                    for (int i = 0; i < newFrame.Width; ++i)
+                    for (int i = 0; i < newFrame.Width - inc; i += inc)
                     {
                         if (
                             *
                             ((int*)
-                             ((int) bitmapData.Scan0 + bitmapData.Stride*j + bitmapData.Stride/bitmapData.Width*i)) !=
+                             ((int)bitmapData.Scan0 + bitmapData.Stride * j + bitmapData.Stride / bitmapData.Width * i)) !=
                             *
                             ((int*)
                              ((int)oldBitmapData.Scan0 + oldBitmapData.Stride * j + oldBitmapData.Stride / oldBitmapData.Width * i)))
                         {
                             startY = j;
+                            identical = false;
                             needBreak = true;
                             break;
                         }
@@ -195,10 +201,17 @@ namespace DifferenceLib
                         break;
                 }
 
-                for (int j = newFrame.Height - 1; j >= 0; --j)
+                if (identical)
+                {
+                    newFrame.UnlockBits(bitmapData);
+                    _oldImage.UnlockBits(oldBitmapData);
+                    return diffContainer;
+                }
+
+                for (int j = newFrame.Height - 1; j >= startY + inc; j -= inc)
                 {
                     var needBreak = false;
-                    for (int i = 0; i < newFrame.Width; ++i)
+                    for (int i = 0; i < newFrame.Width - inc; i += inc)
                     {
                         if (
                             *
@@ -217,10 +230,10 @@ namespace DifferenceLib
                         break;
                 }
 
-                for (int i = 0; i < newFrame.Width; ++i)
+                for (int i = 0; i < newFrame.Width - inc; i += inc)
                 {
                     var needBreak = false;
-                    for (int j = 0; j < newFrame.Height; ++j)
+                    for (int j = startY; j <= endY - inc; j += inc)
                     {
                         if (
                             *
@@ -239,10 +252,10 @@ namespace DifferenceLib
                         break;
                 }
 
-                for (int i = newFrame.Width - 1; i >= 0; --i)
+                for (int i = newFrame.Width - 1; i >= startX + inc; i -= inc)
                 {
                     var needBreak = false;
-                    for (int j = 0; j < newFrame.Height; ++j)
+                    for (int j = startY; j <= endY - inc; j += inc)
                     {
                         if (
                             *
@@ -279,6 +292,7 @@ namespace DifferenceLib
             else
                 endX = newFrame.Width - 1;
 
+
             newFrame.UnlockBits(bitmapData);
             _oldImage.UnlockBits(oldBitmapData);
 
@@ -294,5 +308,92 @@ namespace DifferenceLib
         {
             return GetDiffs(newFrame, 1);
         }
+    }
+
+    public class DiffDetectorOpenCvSharp : IDiffDetector
+    {
+        private Bitmap _oldImage;
+
+        IplImage Previous_Frame = null;
+
+
+
+        public DiffContainer GetDiffs(Bitmap newFrame, int compressRate)
+        {
+            IplImage Frame = BitmapConverter.ToIplImage(newFrame);
+
+            if (_oldImage == null || _oldImage.Height != newFrame.Height) _oldImage = new Bitmap(newFrame.Width, newFrame.Height);
+            IplImage Previous_Frame = BitmapConverter.ToIplImage(_oldImage);
+
+            IplImage Difference = new IplImage(Previous_Frame.Width, Previous_Frame.Height, BitDepth.U8, 4);
+
+            Cv.AbsDiff(Frame, Previous_Frame, Difference);
+
+            IplImage gray = new IplImage(Previous_Frame.Width, Previous_Frame.Height, BitDepth.U8, 1);
+
+            Cv.CvtColor(Difference, gray, ColorConversion.RgbToGray);
+
+            DiffContainer container = new DiffContainer();
+
+            CvSeq<CvPoint> contours;
+            CvSeq<CvPoint> contour;
+
+            using (CvMemStorage storage = new CvMemStorage())
+                for (int i = gray.FindContours(storage, out contours, CvContour.SizeOf, ContourRetrieval.External, ContourChain.ApproxSimple); contours != null; contours = contours.HNext)
+                {
+
+                    contour = Cv.ApproxPoly(contours, CvContour.SizeOf, storage, ApproxPolyMethod.DP, 0.2);
+
+                    if (contour.ContourPerimeter() > 100
+                        &&contour.ContourPerimeter()<10000
+                        )
+                    {
+                        var r = contour.BoundingRect();
+
+
+                            var im = Frame.GetSubImage(r);
+
+                        
+
+                            Rectangle rect = new Rectangle(r.X, r.Y, r.Width, r.Height);
+
+
+                            rect.X -= 1;
+                            rect.Y -= 1;
+                            rect.Width += 2;
+                            rect.Height += 2;
+
+
+                            var j = BitmapConverter.ToBitmap(im);
+                            container.Data.Add(rect, j);
+
+                    }
+
+                }
+            UpdateOldFrame(container);
+
+
+            return container;
+        }
+
+        public DiffContainer GetDiffs(Bitmap newFrame)
+        {
+            return GetDiffs(newFrame, 1);
+        }
+
+        private void UpdateOldFrame(DiffContainer diffs)
+        {
+            Graphics g = Graphics.FromImage(_oldImage);
+
+            foreach (var p in diffs.Data)
+            {
+                g.DrawImage(p.Value, p.Key);
+            }
+
+            Previous_Frame = BitmapConverter.ToIplImage(_oldImage);
+        }
+
+
+
     }
 }
