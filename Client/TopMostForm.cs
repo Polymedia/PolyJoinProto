@@ -41,8 +41,8 @@ namespace Client
         {
             InitializeComponent();
 
-            Width = Screen.PrimaryScreen.WorkingArea.Width;
-            Height = Screen.PrimaryScreen.WorkingArea.Height;
+            Width = Screen.PrimaryScreen.Bounds.Width;
+            Height = Screen.PrimaryScreen.Bounds.Height;
 
             Location = new Point(0, 0);
 
@@ -77,8 +77,8 @@ namespace Client
                 };
 
             _cursor = pictureBox1;
-            _cursor.Width = Cursors.Arrow.Size.Width;
-            _cursor.Height = Cursors.Arrow.Size.Height;
+            _cursor.Width = Cursors.Arrow.Size.Width / 2;
+            _cursor.Height = Cursors.Arrow.Size.Height / 3 * 2;
 
             _cursor.Location = new Point(0, 0);
 
