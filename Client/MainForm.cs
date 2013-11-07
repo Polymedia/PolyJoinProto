@@ -270,6 +270,7 @@ namespace Client
                             StartDiffDetectThread();
                             _paintControl.Init(_presenterWidth, _presenterHeight, Color.Black, _topMostForm);
                             _topMostForm.Show();
+                            _topMostForm.SetClickThrough(true);
                         }
                         else
                             _paintControl.Init(_presenterWidth, _presenterHeight, Color.Black, null);
@@ -293,7 +294,7 @@ namespace Client
                     {
                         connectionStateValueLabel.Text = "Connected";
 
-                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(Screen.PrimaryScreen.WorkingArea.Width * ScreenshotScale), (int)(Screen.PrimaryScreen.WorkingArea.Height * ScreenshotScale), ClientName);
+                        ClientWebSocketConnection.QueryState(ConferenceId, (int)(Screen.PrimaryScreen.Bounds.Width * ScreenshotScale), (int)(Screen.PrimaryScreen.Bounds.Height * ScreenshotScale), ClientName);
                     }
                     else
                     {
@@ -587,22 +588,22 @@ namespace Client
                 {
                     try
                     {
-                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.WorkingArea.Width,
-                                                       Screen.PrimaryScreen.WorkingArea.Height);
+                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+                                                       Screen.PrimaryScreen.Bounds.Height);
 
                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
                         {
                             screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
                                                               new Size(
-                                                                  Screen.PrimaryScreen.WorkingArea.Width,
-                                                                  Screen.PrimaryScreen.WorkingArea.Height));
+                                                                  Screen.PrimaryScreen.Bounds.Width,
+                                                                  Screen.PrimaryScreen.Bounds.Height));
 
                             if (Math.Abs(ScreenshotScale - 1) > 0.01)
                                 screenShot = new Bitmap(screenShot,
                                                         (int)
-                                                        (Screen.PrimaryScreen.WorkingArea.Width * ScreenshotScale),
+                                                        (Screen.PrimaryScreen.Bounds.Width * ScreenshotScale),
                                                         (int)
-                                                        (Screen.PrimaryScreen.WorkingArea.Height * ScreenshotScale));
+                                                        (Screen.PrimaryScreen.Bounds.Height * ScreenshotScale));
                         }
 
                         DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
