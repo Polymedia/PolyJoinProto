@@ -16,49 +16,13 @@ namespace DifferenceLib
         public long Elapsed { get; set; }
 
         public Dictionary<Rectangle, Bitmap> Data = new Dictionary<Rectangle, Bitmap>();
-        static ImageCodecInfo jgpEncoder;
-        static EncoderParameters myEncoderParameters;
-
-        static DiffContainer()
-        {
-            //jgpEncoder = GetEncoder(ImageFormat.Jpeg);
-
-            //// Create an Encoder object based on the GUID
-            //// for the Quality parameter category.
-            //System.Drawing.Imaging.Encoder myEncoder =
-            //    System.Drawing.Imaging.Encoder.Quality;
-
-            //// Create an EncoderParameters object.
-            //// An EncoderParameters object has an array of EncoderParameter
-            //// objects. In this case, there is only one
-            //// EncoderParameter object in the array.
-            //myEncoderParameters = new EncoderParameters(1);
-
-            //EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder,jpegQuality);
-            //myEncoderParameters.Param[0] = myEncoderParameter;
-        }
+        static ImageCodecInfo _jgpEncoder;
+        public static byte Quality;
 
         public static void Init(byte jpegQuality)
         {
-
-            jgpEncoder = GetEncoder(ImageFormat.Jpeg);
-
-            // Create an Encoder object based on the GUID
-            // for the Quality parameter category.
-            System.Drawing.Imaging.Encoder myEncoder =
-                System.Drawing.Imaging.Encoder.Quality;
-
-            // Create an EncoderParameters object.
-            // An EncoderParameters object has an array of EncoderParameter
-            // objects. In this case, there is only one
-            // EncoderParameter object in the array.
-            myEncoderParameters = new EncoderParameters(1);
-
-            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, Int64.Parse(jpegQuality.ToString()));
-            myEncoderParameters.Param[0] = myEncoderParameter;
-
-
-
+            Quality = jpegQuality;
+            _jgpEncoder = GetEncoder(ImageFormat.Jpeg);
         }
 
         private static ImageCodecInfo GetEncoder(ImageFormat format)
@@ -72,32 +36,6 @@ namespace DifferenceLib
                 }
             }
             return null;
-        }
-
-        public static List<byte[]> ContainerToByteContainer(DiffContainer cont)
-        {
-            var result = new List<byte[]>();
-
-            foreach (var d in cont.Data)
-            {
-                var imageBytes = ImageToByteArray(d.Value);
-
-                int x = d.Key.X;
-                int y = d.Key.Y;
-                int width = d.Key.Width;
-                int height = d.Key.Height;
-
-
-                var diffBytes = BitConverter.GetBytes(x).
-                                             Concat(BitConverter.GetBytes(y)).
-                                             Concat(BitConverter.GetBytes(width)).
-                                             Concat(BitConverter.GetBytes(height)).
-                                             Concat(imageBytes).ToArray<byte>();
-
-                result.Add(diffBytes);
-            }
-
-            return result;
         }
 
         public static KeyValuePair<Rectangle, Bitmap> FromBytes(byte[] data)
@@ -177,22 +115,34 @@ namespace DifferenceLib
             }
         }
 
-        public static byte[] ImageToByteArray(Image imageIn)
+        public static byte[] ImageToByteArray(Image imageIn, byte quality)
         {
             using (MemoryStream ms = new MemoryStream())
             {
-                imageIn.Save(ms, jgpEncoder, myEncoderParameters);
+                var encoderParameters = new EncoderParameters(1);
+                Encoder myEncoder = Encoder.Quality;
+                EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, Int64.Parse(quality.ToString()));
+                encoderParameters.Param[0] = myEncoderParameter;
+
+                imageIn.Save(ms, _jgpEncoder, encoderParameters);
+
                 //imageIn.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
                 return ms.ToArray();
             }
         }
 
-        public static byte[] ImageToByte2(Image img)
+        public static byte[] ImageToByte2(Image img, byte quality)
         {
             byte[] byteArray = new byte[0];
             using (MemoryStream stream = new MemoryStream())
             {
-                img.Save(stream, jgpEncoder, myEncoderParameters);
+                var encoderParameters = new EncoderParameters(1);
+                Encoder myEncoder = Encoder.Quality;
+                EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, Int64.Parse(quality.ToString()));
+                encoderParameters.Param[0] = myEncoderParameter;
+
+                img.Save(stream, _jgpEncoder, encoderParameters);
+
                 //img.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
                 stream.Close();
                 byteArray = stream.ToArray();
@@ -205,11 +155,11 @@ namespace DifferenceLib
 
 
 
-        public static Dictionary<Rectangle, Bitmap> Split(KeyValuePair<Rectangle, Bitmap> originalImage, int maxSize)
+        public static Dictionary<Rectangle, Bitmap> Split(KeyValuePair<Rectangle, Bitmap> originalImage, int maxSize, byte quality)
         {
             var result = new Dictionary<Rectangle, Bitmap>();
 
-            if (ImageToByteArray(originalImage.Value).Length <= maxSize)
+            if (ImageToByteArray(originalImage.Value, quality).Length <= maxSize)
             {
                 result.Add(originalImage.Key, originalImage.Value);
                 return result;
@@ -283,15 +233,15 @@ namespace DifferenceLib
             }
 
 
-            return Split(new KeyValuePair<Rectangle, Bitmap>(r1, firstBitmap), maxSize).Concat(
-                Split(new KeyValuePair<Rectangle, Bitmap>(r2, secondBitmap), maxSize)).ToDictionary(p => p.Key, p => p.Value);
+            return Split(new KeyValuePair<Rectangle, Bitmap>(r1, firstBitmap), maxSize, quality).Concat(
+                Split(new KeyValuePair<Rectangle, Bitmap>(r2, secondBitmap), maxSize, quality)).ToDictionary(p => p.Key, p => p.Value);
         }
 
-        public static Dictionary<Rectangle, Bitmap> Split(Dictionary<Rectangle, Bitmap> originalImagesDict, int maxSize)
+        public static Dictionary<Rectangle, Bitmap> Split(Dictionary<Rectangle, Bitmap> originalImagesDict, int maxSize, byte quality)
         {
             if (originalImagesDict != null && originalImagesDict.Count > 0)
                 return
-                    originalImagesDict.Select(p => Split(p, maxSize)).AsParallel()
+                    originalImagesDict.Select(p => Split(p, maxSize, quality)).AsParallel()
                                       .Aggregate((d1, d2) => d1.Concat(d2).ToDictionary(p => p.Key, p => p.Value));
             else return originalImagesDict;
         }

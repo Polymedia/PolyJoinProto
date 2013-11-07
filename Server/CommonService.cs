@@ -94,14 +94,16 @@ namespace Server
                     
                     if (command.SenderConnection != conference.PresenterConnection)
                     {
+                        var quality = DiffContainer.Quality;
+                        
                         //Отсылаем последний вариант картинки
                         var data = DiffContainer.Split(
                             new KeyValuePair<Rectangle, Bitmap>(
-                                new Rectangle(0, 0, conference.Bitmap.Size.Width, conference.Bitmap.Size.Height), conference.Bitmap), 50000);
+                                new Rectangle(0, 0, conference.Bitmap.Size.Width, conference.Bitmap.Size.Height), conference.Bitmap), 50000, quality);
 
                         foreach (var d in data)
                         {
-                            ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendDiff(conference.Id, new DiffItem(d));
+                            ((ServerWebSocketConnection)queryStateCommand.SenderConnection).SendDiff(conference.Id, new DiffItem(d, quality));
                         }
                     }
                 }

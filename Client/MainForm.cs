@@ -608,10 +608,12 @@ namespace Client
 
                         DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
 
-                        diffContainer.Data = DiffContainer.Split(diffContainer.Data, 44000);
+                        var quality = DiffContainer.Quality;
+
+                        diffContainer.Data = DiffContainer.Split(diffContainer.Data, 64000, quality);
 
                         foreach (var s in diffContainer.Data)
-                            ClientWebSocketConnection.SendDiff(ConferenceId, new DiffItem(s));
+                            ClientWebSocketConnection.SendDiff(ConferenceId, new DiffItem(s, quality));
                     }
                     catch(Exception ex)
                     {

@@ -16,18 +16,18 @@ namespace DifferenceLib
         public int Height { get; set; }
         public byte[] ImageBytes { get; set; }
         
-        public DiffItem(Rectangle rectangle, Bitmap bitmap)
+        public DiffItem(Rectangle rectangle, Bitmap bitmap, byte quality)
         {
             X = rectangle.X;
             Y = rectangle.Y;
             Width = rectangle.Width;
             Height = rectangle.Height;
             //ImageBytes = DiffContainer.ImageToByteArray(bitmap);
-            ImageBytes = DiffContainer.ImageToByte2(bitmap);
+            ImageBytes = DiffContainer.ImageToByte2(bitmap, quality);
         }
 
-        public DiffItem(KeyValuePair<Rectangle, Bitmap> dataItem)
-            : this(dataItem.Key, dataItem.Value)
+        public DiffItem(KeyValuePair<Rectangle, Bitmap> dataItem, byte quality)
+            : this(dataItem.Key, dataItem.Value, quality)
         {}
 
        
