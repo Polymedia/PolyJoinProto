@@ -588,7 +588,7 @@ namespace Client
 
                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
                         {
-                            screenShotGraphics.CopyFromScreen(SystemInformation.VirtualScreen.X, SystemInformation.VirtualScreen.Y, 0, 0,
+                            screenShotGraphics.CopyFromScreen(0, 0, 0, 0,
                                                               new Size(
                                                                   Screen.PrimaryScreen.WorkingArea.Width,
                                                                   Screen.PrimaryScreen.WorkingArea.Height));
