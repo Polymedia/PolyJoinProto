@@ -10,22 +10,20 @@ using DifferenceLib;
 using Polymedia.PolyJoin.Client;
 using Polymedia.PolyJoin.Common;
 using Painter;
-using System.Diagnostics;
-using System.IO;
 
 namespace Client
 {
     public partial class MainForm : Form
     {
-        private ClientWebSocketConnection _clientWebSocketConnection = null;
+        private ClientWebSocketConnection _clientWebSocketConnection;
 
-        private bool _runDiffDetectThread = false;
-        private Thread _diffDetectThread = null;
+        private bool _runDiffDetectThread;
+        private Thread _diffDetectThread;
 
-        private Queue _queue = Queue.Synchronized(new Queue());
+        private readonly Queue _queue = Queue.Synchronized(new Queue());
 
-        private bool _runProcessCommandsThread = false;
-        private Thread _processCommandsThread = null;
+        private bool _runProcessCommandsThread;
+        private Thread _processCommandsThread;
 
         private byte _quality;
         public byte Quality // 0 - 100
@@ -34,6 +32,7 @@ namespace Client
             set
             {
                 _quality = value;
+                DiffContainer.Quality = _quality;
             }
         }
 
@@ -41,10 +40,7 @@ namespace Client
         public int Delay // в ms (0 - 1000)
         {
             get { return _delay; }
-            set
-            {
-                _delay = value;
-            }
+            set { _delay = value; }
         }
 
         public ClientWebSocketConnection ClientWebSocketConnection
@@ -78,11 +74,11 @@ namespace Client
         private string _id;
 
         private Color _paintColor;
-        private Bitmap _diffFrame = null;
+        private Bitmap _diffFrame;
 
         private PainterControl _paintControl;
 
-        private TopMostForm _topMostForm;
+        private readonly TopMostForm _topMostForm;
 
         public MainForm()
         {
@@ -119,7 +115,7 @@ namespace Client
                             Brush gridBrush = new SolidBrush(dataGridView.GridColor),
                                   backColorBrush = new SolidBrush(args.CellStyle.BackColor))
                         {
-                            using (Pen gridLinePen = new Pen(gridBrush))
+                            using (var gridLinePen = new Pen(gridBrush))
                             {
                                 args.Graphics.FillRectangle(backColorBrush, args.CellBounds);
 
@@ -138,7 +134,7 @@ namespace Client
                     }
                 };
 
-            conferenceIdValueLabel.DoubleClick += (sender, args) => { Clipboard.SetText(conferenceIdValueLabel.Text); };
+            conferenceIdValueLabel.DoubleClick += (sender, args) => Clipboard.SetText(conferenceIdValueLabel.Text);
             
             VisibleChanged += (sender, ea) =>
                 {
@@ -186,21 +182,12 @@ namespace Client
             tableLayoutPanel.Controls.Add(_paintControl, 1, 1);
             _paintControl.Dock = DockStyle.Fill;
 
-            _paintControl.FigureAdded += (s, e) =>
-            {
-                ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Id, e.Value.Points,
-                                                                e.Value.Color);
-            };
+            _paintControl.FigureAdded += (s, e) => ClientWebSocketConnection.PaintAddFigureCommand(ConferenceId, e.Value.Id, e.Value.Points,
+                                                                                                   e.Value.Color);
 
-            _paintControl.FigureRemoved += (s, e) =>
-            {
-                ClientWebSocketConnection.PaintDeleteFigureCommand(ConferenceId, e.Value);
-            };
+            _paintControl.FigureRemoved += (s, e) => ClientWebSocketConnection.PaintDeleteFigureCommand(ConferenceId, e.Value);
 
-            _paintControl.MouseInputed += (sender, args) =>
-            {
-                ClientWebSocketConnection.SendInput(ConferenceId, args.Value);
-            };
+            _paintControl.MouseInputed += (sender, args) => ClientWebSocketConnection.SendInput(ConferenceId, args.Value);
 
             _paintControl.FullScreenCanceled += (s, e) =>
                 {
@@ -366,32 +353,32 @@ namespace Client
 
                         if (_queue.Count != 0)
                         {
-                            Command command = (Command)_queue.Dequeue();
+                            var command = (Command)_queue.Dequeue();
 
                             if (command is DiffCommand)
                             {
-                                DiffCommand diffCommand = command  as DiffCommand;
+                                var diffCommand = command  as DiffCommand;
                                 ProcessDiffCommand(diffCommand);
                                 draw = true;
                             }
                             else if (command is ParticipantsCommand)
                             {
-                                ParticipantsCommand participantsCommand = command as ParticipantsCommand;
+                                var participantsCommand = command as ParticipantsCommand;
                                 ProcessParticipantsCommand(participantsCommand);
                             }
                             else if (command is InputCommand)
                             {
-                                InputCommand inputCommand = command as InputCommand;
+                                var inputCommand = command as InputCommand;
                                 ProcessInputCommand(inputCommand);
                             }
                             else if (command is PaintAddFigureCommand)
                             {
-                                PaintAddFigureCommand paintAddFigureCommand = command as PaintAddFigureCommand;
+                                var paintAddFigureCommand = command as PaintAddFigureCommand;
                                 ProcessPaintAddFigureCommand(paintAddFigureCommand);
                             }
                             else if (command is PaintDeleteFigureCommand)
                             {
-                                PaintDeleteFigureCommand paintDeleteFigureCommand =
+                                var paintDeleteFigureCommand =
                                     command as PaintDeleteFigureCommand;
                                 ProcessPaintDeleteFigureCommand(paintDeleteFigureCommand);
                             }
@@ -522,7 +509,7 @@ namespace Client
                             foreach (DataGridViewCell cell in row.Cells)
                                 cell.Style.BackColor = Color.Gainsboro;
 
-                    var me = participantsCommand.Participants.Where(p => p.Id == _id).First();
+                    var me = participantsCommand.Participants.First(p => p.Id == _id);
                     _paintColor = Color.FromArgb(me.BrushArgb);
                     _paintControl.Color = _paintColor;
                 }));
@@ -533,8 +520,8 @@ namespace Client
             if (inputCommand.MouseInput != null)
             {
                 MouseInput mouseInput = inputCommand.MouseInput;
-                int x = (int) (mouseInput.X/ScreenshotScale);
-                int y = (int) (mouseInput.Y/ScreenshotScale);
+                var x = (int) (mouseInput.X/ScreenshotScale);
+                var y = (int) (mouseInput.Y/ScreenshotScale);
                 switch (mouseInput.MouseInputType)
                 {
                     case MouseInput.MouseInputEnum.Move:
@@ -562,27 +549,19 @@ namespace Client
                         else
                             MouseAPI.RightButtonClick(x, y);
                         break;
-                    default:
-                        break;
                 }
             }
         }
 
         private void ProcessPaintAddFigureCommand(PaintAddFigureCommand paintAddFigureCommand)
         {
-            Invoke(new Action(() =>
-                {
-                    _paintControl.AddFigure(paintAddFigureCommand.FigureId, paintAddFigureCommand.Points,
-                                            paintAddFigureCommand.Color);
-                }));
+            Invoke(new Action(() => _paintControl.AddFigure(paintAddFigureCommand.FigureId, paintAddFigureCommand.Points,
+                                                            paintAddFigureCommand.Color)));
         }
 
         private void ProcessPaintDeleteFigureCommand(PaintDeleteFigureCommand paintDeleteFigureCommand)
         {
-            Invoke(new Action(() =>
-                {
-                    _paintControl.RemoveFigure(paintDeleteFigureCommand.FigureId);
-                }));
+            Invoke(new Action(() => _paintControl.RemoveFigure(paintDeleteFigureCommand.FigureId)));
         }
 
         public void StartDiffDetectThread()
@@ -598,7 +577,7 @@ namespace Client
             _diffDetectThread = new Thread(() =>
             {
 
-                IDiffDetector _diffDetector = new CustomDiffDetector(JpegQuality);
+                IDiffDetector diffDetector = new CustomDiffDetector(JpegQuality);
                 
                 //IDiffDetector _diffDetector = new DiffDetector();
                 //IDiffDetector _diffDetector = new DiffDetectorOpenCvSharp();
@@ -608,7 +587,7 @@ namespace Client
                 {
                     try
                     {
-                        Bitmap screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+                        var screenShot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
                                                        Screen.PrimaryScreen.Bounds.Height);
 
                         using (Graphics screenShotGraphics = Graphics.FromImage(screenShot))
@@ -621,12 +600,12 @@ namespace Client
                             if (Math.Abs(ScreenshotScale - 1) > 0.01)
                                 screenShot = new Bitmap(screenShot,
                                                         (int)
-                                                        (Screen.PrimaryScreen.Bounds.Width * ScreenshotScale),
+                                                        (Screen.PrimaryScreen.Bounds.Width*ScreenshotScale),
                                                         (int)
-                                                        (Screen.PrimaryScreen.Bounds.Height * ScreenshotScale));
+                                                        (Screen.PrimaryScreen.Bounds.Height*ScreenshotScale));
                         }
 
-                        DiffContainer diffContainer = _diffDetector.GetDiffs(screenShot);
+                        DiffContainer diffContainer = diffDetector.GetDiffs(screenShot);
 
                         var quality = DiffContainer.Quality;
 
@@ -635,11 +614,11 @@ namespace Client
                         foreach (var s in diffContainer.Data)
                             ClientWebSocketConnection.SendDiff(ConferenceId, new DiffItem(s, quality));
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine("_diffDetectThread : " + ex.Message );
+                        Console.WriteLine("_diffDetectThread : " + ex.Message);
                     }
-                    Thread.Sleep(ScreenshotTimeout);
+                    Thread.Sleep(_delay);
                 }
             });
             _diffDetectThread.Start();
