@@ -27,6 +27,26 @@ namespace Client
         private bool _runProcessCommandsThread = false;
         private Thread _processCommandsThread = null;
 
+        private byte _quality;
+        public byte Quality // 0 - 100
+        {
+            get { return _quality; }
+            set
+            {
+                _quality = value;
+            }
+        }
+
+        private byte _delay;
+        public byte Delay // в ms (0 - 1000)
+        {
+            get { return _delay; }
+            set
+            {
+                _delay = value;
+            }
+        }
+
         public ClientWebSocketConnection ClientWebSocketConnection
         {
             set
