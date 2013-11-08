@@ -88,6 +88,7 @@ namespace Client
                 Cursors.Default.Draw(g, new Rectangle(0, 0, Cursors.Arrow.Size.Width, Cursors.Arrow.Size.Height));
             }
             _cursor.Image = bitmap;
+            _cursor.Parent = pictureBox;
         }
 
         public void SetClickThrough(bool clickThrough)
